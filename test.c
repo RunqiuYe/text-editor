@@ -279,9 +279,16 @@ void abFree(struct abuf *ab) {
 /*** output ***/
 
 void editorScroll() {
-    E.rx = 0;
+  // Move cursor according to tabs
+  E.rx = 0;
   if (E.cy < E.numrows) {
     E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
+  }
+  
+  // Adjust offset and move cursor
+  // to show correct part of text
+  if (E.cy < E.rowoff) {
+    E.rowoff = E.cy;
   }
   if (E.cy >= E.rowoff + E.screenrows) {
     E.rowoff = E.cy - E.screenrows + 1;
