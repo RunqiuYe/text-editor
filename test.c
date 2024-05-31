@@ -53,6 +53,7 @@ struct editorConfig {
   struct termios orig_termios;
   int numrows;
   erow *row;
+  char *filename;
 };
 
 struct editorConfig E;
@@ -237,6 +238,9 @@ void editorAppendRow(char *s, size_t len) {
 
 /*** file i/o ***/
 void editorOpen(char *filename) {
+  free(E.filename);
+  E.filename = strdup(filename);
+
   FILE *fp = fopen(filename, "r");
   if (!fp) die("fopen");
 
@@ -284,7 +288,7 @@ void editorScroll() {
   if (E.cy < E.numrows) {
     E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
   }
-  
+
   // Adjust offset and move cursor
   // to show correct part of text
   if (E.cy < E.rowoff) {
@@ -344,10 +348,44 @@ void editorDrawRows(struct abuf *ab) {
     }
 
     abAppend(ab, "\x1b[K", 3);
-    if (y < E.screenrows - 1) {
-      abAppend(ab, "\r\n", 2);
+    abAppend(ab, "\r\n", 2);
+  }
+}
+
+void editorDrawStatusBar(struct abuf *ab) {
+  abAppend(ab, "\x1b[7m", 4);
+  int len;
+  char status[80];
+  
+  // file name and total line
+  if (E.filename != NULL) {
+    len = snprintf(status, sizeof(status), 
+                   "%.20s - %d lines", E.filename, E.numrows);
+  } 
+  else {
+    len = snprintf(status, sizeof(status), 
+                   "%.20s - %d lines", "[No Name]", E.numrows);
+  }
+  if (len > E.screencols) len = E.screencols;
+  abAppend(ab, status, len);
+
+  // Current line
+  char rstatus[80];
+  int rlen = snprintf(rstatus, sizeof(rstatus), 
+                      "%d/%d", E.cy + 1, E.numrows);
+
+  // Draw white background
+  while (len < E.screencols) {
+    if (E.screencols - len == rlen) {
+      abAppend(ab, rstatus, rlen);
+      break;
+    }
+    else {
+      abAppend(ab, " ", 1);
+      len++;
     }
   }
+  abAppend(ab, "\x1b[m", 3);
 }
 
 void editorRefreshScreen() {
@@ -359,6 +397,7 @@ void editorRefreshScreen() {
   abAppend(&ab, "\x1b[H", 3);
 
   editorDrawRows(&ab);
+  editorDrawStatusBar(&ab);
   
   char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%d;%dH", 
@@ -473,8 +512,10 @@ void initEditor() {
   E.rowoff = 0;
   E.coloff = 0;
   E.row = NULL;
+  E.filename = NULL;
 
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
+  E.screenrows -= 1;
 }
 
 int main(int argc, char *argv[]) {
