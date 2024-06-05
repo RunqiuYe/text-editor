@@ -210,6 +210,19 @@ int editorRowCxToRx(erow *row, int cx) {
   return rx;
 }
 
+int editorRowRxToCx(erow *row, int rx) {
+  int cur_rx = 0;
+  int cx;
+  for (cx = 0; cx < row->size; cx++) {
+    if (row->chars[cx] == '\t')
+      cur_rx += (TAB_STOP - 1) - (cur_rx % TAB_STOP);
+    cur_rx++;
+
+    if (cur_rx > rx) return cx;
+  }
+  return cx;
+}
+
 void editorUpdateRow(erow *row) {
   // Rendering tabs
   int tabs = 0;
@@ -356,6 +369,32 @@ char *editorRowsToString(int *buflen) {
     p++;
   }
   return buf;
+}
+
+/*** find ***/
+
+void editorFind() {
+  // Find a specific string
+  // If found, move cursor to that position
+  char *query = editorPrompt("Search: %s (ESC to cancel)");
+  if (query == NULL) {
+    editorSetStatusMessage("Search aborted");
+    return;
+  }
+  int i;
+  for (i = 0; i < E.numrows; i++) {
+    erow *row = &E.row[i];
+    char *match = strstr(row->render, query);
+    if (match != NULL) {
+      E.cy = i;
+      // Pointer subtraction col numbers in front
+      E.cx = editorRowRxToCx(row, match - row->render);
+      // Make the moved cursor at the first line
+      E.rowoff = E.numrows;
+      break;
+    }
+  }
+  free(query);
 }
 
 void editorOpen(char *filename) {
@@ -710,6 +749,11 @@ void editorProcessKeypress() {
       break;
     }
 
+    case CTRL_KEY('f'): {
+      editorFind();
+      break;
+    }
+
     case BACKSPACE:
     case CTRL_KEY('h'):
     case DEL_KEY: {
@@ -777,7 +821,9 @@ int main(int argc, char *argv[]) {
     editorOpen(argv[1]);
   }
 
-  editorSetStatusMessage("HELP: Ctrl-S to save | Ctrl-Q to quit");
+  editorSetStatusMessage(
+    "HELP: Ctrl-S to save | Ctrl-Q to quit | Ctrl-F to find"
+  );
 
   while (true) {
     editorRefreshScreen();
