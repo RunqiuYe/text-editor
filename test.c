@@ -39,6 +39,8 @@ enum editorKey {
   PAGE_DOWN
 };
 
+typedef void search_fn (char *query, int key);
+
 /*** data ***/
 
 typedef struct erow {
@@ -70,7 +72,7 @@ struct editorConfig E;
 
 void editorSetStatusMessage(const char *fmt, ...);
 void editorRefreshScreen();
-char *editorPrompt(char *prompt, void (*callback)(char *, int));
+char *editorPrompt(char *prompt, search_fn *callback);
 
 /*** terminal ***/
 
@@ -394,7 +396,7 @@ void editorFindCallback(char *query, int key) {
 void editorFind() {
   // Find a specific string
   // If found, move cursor to that position
-  char *query = editorPrompt("Search: %s (ESC to cancel)", editorFindCallback);
+  char *query = editorPrompt("Search: %s (ESC to cancel)", &editorFindCallback);
   
   if (query != NULL) {
     free(query);
@@ -623,7 +625,7 @@ void editorSetStatusMessage(const char *fmt, ...) {
 
 /*** input ***/
 
-char *editorPrompt(char *prompt, void (*callback)(char *, int)) {
+char *editorPrompt(char *prompt, search_fn *callback) {
   size_t bufsize = 128;
   char *buf = malloc(bufsize);
   size_t buflen = 0;
@@ -644,7 +646,7 @@ char *editorPrompt(char *prompt, void (*callback)(char *, int)) {
     else if (c == '\x1b') {
       editorSetStatusMessage("");
       if (callback != NULL) {
-        callback(buf, c);
+        (*callback)(buf, c);
       }
       free(buf);
       return NULL;
@@ -654,7 +656,7 @@ char *editorPrompt(char *prompt, void (*callback)(char *, int)) {
       if (buflen != 0) {
         editorSetStatusMessage("");
         if (callback != NULL) {
-          callback(buf, c);
+          (*callback)(buf, c);
         }
         return buf;
       }
@@ -674,7 +676,7 @@ char *editorPrompt(char *prompt, void (*callback)(char *, int)) {
     }
 
     if (callback != NULL) {
-      callback(buf, c);
+      (*callback)(buf, c);
     }
   }
 }
