@@ -581,14 +581,30 @@ void editorDrawRows(struct abuf *ab) {
     }
     else {
       // Show the text from file
+      
+      // length of text we need to write on screen
       int len = E.row[filerow].rsize - E.coloff;
-      if (len <= 0) {
-        len = 0;
+
+      if (len <= 0) len == 0;
+      if (len > E.screencols) len = E.screencols;
+      char *s = &E.row[filerow].render[E.coloff];
+
+      int j;
+      for (j = 0; j < len; j++) {
+        if (isdigit(s[j])) {
+          // highlight for numbers
+          abAppend(ab, "\x1b[31m", 5);
+          abAppend(ab, &s[j], 1);
+          abAppend(ab, "\x1b[39m", 5);
+        } 
+        else {
+          abAppend(ab, &s[j], 1);
+        }
       }
-      else {
-        if (len > E.screencols) len = E.screencols;
-        abAppend(ab, &E.row[filerow].render[E.coloff], len);
-      }
+      // else {
+      //   if (len > E.screencols) len = E.screencols;
+      //   abAppend(ab, &E.row[filerow].render[E.coloff], len);
+      // }
     }
 
     abAppend(ab, "\x1b[K", 3);
