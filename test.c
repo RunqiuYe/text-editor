@@ -394,12 +394,23 @@ void editorFindCallback(char *query, int key) {
 }
 
 void editorFind() {
+  int saved_cx = E.cx;
+  int saved_cy = E.cy;
+  int saved_coloff = E.coloff;
+  int saved_rowoff = E.rowoff;
+
   // Find a specific string
   // If found, move cursor to that position
   char *query = editorPrompt("Search: %s (ESC to cancel)", &editorFindCallback);
   
   if (query != NULL) {
     free(query);
+  }
+  else {
+    E.cx = saved_cx;
+    E.cy = saved_cy;
+    E.coloff = saved_coloff;
+    E.rowoff = saved_rowoff;
   }
 }
 
