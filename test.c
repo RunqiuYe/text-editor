@@ -376,14 +376,50 @@ char *editorRowsToString(int *buflen) {
 /*** find ***/
 
 void editorFindCallback(char *query, int key) {
-  if (key == 'r' || key == '\x1b') return;
+  // Search forwards and backwards
+  static int last_match = -1; // row index of last match
+  static int direction = 1; // search forwards or backwards
 
+  if (key == 'r' || key == '\x1b') {
+    last_match = -1;
+    direction = 1;
+    return;
+  }
+  else if (key == ARROW_UP || key == ARROW_LEFT) {
+    direction = -1;
+  }
+  else if (key == ARROW_DOWN || key == ARROW_RIGHT) {
+    direction = 1;
+  }
+  else {
+    last_match = -1;
+    direction = 1;
+  }
+
+  if (last_match == -1) {
+    direction = 1;
+  }
+  int current = last_match;
   int i;
   for (i = 0; i < E.numrows; i++) {
-    erow *row = &E.row[i];
+    // start searching the entire file (either forward
+    // or backwards) from the current line (last_match)
+
+    current += direction;
+
+    // wrap around if go out of bound
+    if (current == -1) {
+      current = E.numrows - 1;
+    }
+    else if (current == E.numrows) {
+      current = 0;
+    }
+
+    erow *row = &E.row[current];
     char *match = strstr(row->render, query);
     if (match != NULL) {
-      E.cy = i;
+      last_match = current;
+      E.cy = current;
       // Pointer subtraction col numbers in front
       E.cx = editorRowRxToCx(row, match - row->render);
       // Make the moved cursor at the first line
@@ -401,7 +437,7 @@ void editorFind() {
 
   // Find a specific string
   // If found, move cursor to that position
-  char *query = editorPrompt("Search: %s (ESC to cancel)", &editorFindCallback);
+  char *query = editorPrompt("Search: %s (Use ESC/Arrows/Enter)", &editorFindCallback);
   
   if (query != NULL) {
     free(query);
