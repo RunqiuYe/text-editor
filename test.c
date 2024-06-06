@@ -41,13 +41,15 @@ enum editorKey {
 
 enum editorHighlight {
   HL_NORMAL = 0,
+  HL_STRING,
   HL_NUMBER,
   HL_MATCH,
 };
 
 typedef void search_fn (char *query, int key);
 
-#define HL_HIGHLIGHT_NUMBERS (1<<0) // Number highlight flag
+#define HL_HIGHLIGHT_NUMBERS (1<<0) // number highlight flag
+#define HL_HIGHLIHHT_STRINGS (1<<1) // string highlight flag
 
 /*** data ***/
 
@@ -96,7 +98,7 @@ struct editorSyntax HLDB[] = {
   {
     "c",
     C_HL_extensions,
-    HL_HIGHLIGHT_NUMBERS
+    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIHHT_STRINGS
   },
 };
 
@@ -105,7 +107,7 @@ struct editorSyntax HLDB[] = {
 /*** prototypes ***/
 
 void editorSetStatusMessage(const char *fmt, ...);
-void editorRefreshScreen();
+void editorRefreshScreen(void);
 char *editorPrompt(char *prompt, search_fn *callback);
 
 /*** terminal ***/
@@ -117,13 +119,13 @@ void die(const char *s) {
   exit(1);
 }
 
-void disableRawMode() {
+void disableRawMode(void) {
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1) {
     die("tcsetattr");
   }
 }
 
-void enableRawMode() {
+void enableRawMode(void) {
   if (tcgetattr(STDIN_FILENO, &E.orig_termios) == -1) {
     die("tcgetattr");
   }
@@ -142,7 +144,7 @@ void enableRawMode() {
   }
 }
 
-int editorReadKey() {
+int editorReadKey(void) {
   int nread;
   char c;
   while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
@@ -247,7 +249,9 @@ void editorUpdateSyntax(erow *row) {
   if (E.syntax == NULL) return;
 
   // keep track of whether previous char is a separtor
-  bool prev_sep = true;
+  int prev_sep = 1;
+  // keep track of whether in a string
+  int instring = 0;
   
   int i = 0;
   
@@ -255,7 +259,33 @@ void editorUpdateSyntax(erow *row) {
     char c = row->render[i];
     // highlight type of the previous character
     unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : HL_NORMAL;
-    // if highlight number flag is turned on, highligh numbers
+    
+    // if highlight string flag is turned on, highlight strings
+    if (E.syntax->flags & HL_HIGHLIHHT_STRINGS) {
+      if (instring) {
+        row->hl[i] = HL_STRING;
+
+        if (c == '\\' && i + 1 < row->rsize) {
+          row->hl[i + 1] = HL_STRING;
+          i += 2;
+          continue;
+        }
+
+        if (c == instring) instring = 0;
+        i++;
+        prev_sep = 1;
+        continue;
+      }
+      // consider both double/single quote, store " or ' in c
+      else if (c == '"' || c == '\''){
+          instring = c;
+          row->hl[i] = HL_STRING;
+          i++;
+          continue;
+      }
+    }
+
+    // if highlight number flag is turned on, highlight numbers
     if (E.syntax->flags & HL_HIGHLIGHT_NUMBERS) {
       if ((isdigit(c) && (prev_sep || prev_hl == HL_NUMBER)) ||
           (c == '.' && prev_hl == HL_NUMBER)
@@ -265,7 +295,7 @@ void editorUpdateSyntax(erow *row) {
         // also support for decimal points
         row->hl[i] = HL_NUMBER;
         i++;
-        prev_sep = false;
+        prev_sep = 0;
         continue;
       }
     }
@@ -277,25 +307,14 @@ void editorUpdateSyntax(erow *row) {
 
 int editorSyntaxToColor(int hl) {
   switch (hl) {
-
-    case HL_NUMBER: {
-      return 31; // red for numbers
-      break;
-    }
-    
-    case HL_MATCH: {
-      return 34; // blue for search match
-      break;
-    }
-
-    default: {
-      return 37;
-      break;
-    }
+    case HL_NUMBER: return 31; // red for numbers
+    case HL_MATCH: return 34; // blue for search match
+    case HL_STRING: return 35; // magenta for strings
+    default: return 37;
   }
 }
 
-void editorSelectSyntaxHighlight() {
+void editorSelectSyntaxHighlight(void) {
   E.syntax = NULL;
   if (E.filename == NULL) return;
   char *ext = strrchr(E.filename, '.');
@@ -438,7 +457,7 @@ void editorRowAppendString(erow *row, char *s, size_t len) {
 
 /*** editor operations ***/
 
-void editorDelChar() {
+void editorDelChar(void) {
   if (E.cy == E.numrows) return;
 
   // If cursor is at the beginning of first line
@@ -465,7 +484,7 @@ void editorInsertChar(int c) {
   E.cx++;
 }
 
-void editorInsertNewline() {
+void editorInsertNewline(void) {
   if (E.cx == 0) {
     editorInsertRow(E.cy, "", 0);
   }
@@ -572,7 +591,7 @@ void editorFindCallback(char *query, int key) {
   }
 }
 
-void editorFind() {
+void editorFind(void) {
   int saved_cx = E.cx;
   int saved_cy = E.cy;
   int saved_coloff = E.coloff;
@@ -618,7 +637,7 @@ void editorOpen(char *filename) {
   E.dirty = 0;
 }
 
-void editorSave() {
+void editorSave(void) {
   if (E.filename == NULL) {
     E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     
@@ -672,7 +691,7 @@ void abFree(struct abuf *ab) {
 
 /*** output ***/
 
-void editorScroll() {
+void editorScroll(void) {
   // Move cursor according to tabs
   E.rx = 0;
   if (E.cy < E.numrows) {
@@ -814,7 +833,7 @@ void editorDrawMessageBar(struct abuf *ab) {
     abAppend(ab, E.statusmsg, msglen);
 }
 
-void editorRefreshScreen() {
+void editorRefreshScreen(void) {
   editorScroll();
 
   struct abuf ab = ABUF_INIT;
@@ -943,7 +962,7 @@ void editorMoveCursor(int key) {
   }
 }
 
-void editorProcessKeypress() {
+void editorProcessKeypress(void) {
   static int quit_times = QUIT_TIMES;
 
   int c = editorReadKey();
@@ -1036,7 +1055,7 @@ void editorProcessKeypress() {
 
 /*** init ***/
 
-void initEditor() {
+void initEditor(void) {
   E.cx = 0;
   E.cy = 0;
   E.rx = 0;
