@@ -36,12 +36,13 @@ enum editorKey {
   HOME_KEY,
   END_KEY,
   PAGE_UP,
-  PAGE_DOWN
+  PAGE_DOWN,
 };
 
 enum editorHighlight {
   HL_NORMAL = 0,
-  HL_NUMBER
+  HL_NUMBER,
+  HL_MATCH,
 };
 
 typedef void search_fn (char *query, int key);
@@ -222,7 +223,12 @@ int editorSyntaxToColor(int hl) {
   switch (hl) {
 
     case HL_NUMBER: {
-      return 31;
+      return 31; // red for numbers
+      break;
+    }
+    
+    case HL_MATCH: {
+      return 34; // blue for search match
       break;
     }
 
@@ -417,7 +423,17 @@ void editorFindCallback(char *query, int key) {
   static int last_match = -1; // row index of last match
   static int direction = 1; // search forwards or backwards
 
-  if (key == 'r' || key == '\x1b') {
+  // reset highlight after search
+  static int saved_hl_line;
+  static char *saved_hl = NULL;
+
+  if (saved_hl != NULL) {
+    memcpy(E.row[saved_hl_line].hl, saved_hl, E.row[saved_hl_line].rsize);
+    free(saved_hl);
+    saved_hl = NULL;
+  }
+
+  if (key == '\r' || key == '\x1b') {
     last_match = -1;
     direction = 1;
     return;
@@ -457,10 +473,16 @@ void editorFindCallback(char *query, int key) {
     if (match != NULL) {
       last_match = current;
       E.cy = current;
-      // Pointer subtraction col numbers in front
+      // pointer subtraction col numbers in front
       E.cx = editorRowRxToCx(row, match - row->render);
-      // Make the moved cursor at the first line
+      // make the moved cursor at the first line
       E.rowoff = E.numrows;
+      
+      // save original highlight and set the match word to blue
+      saved_hl_line = current;
+      saved_hl = malloc(row->rsize);
+      memcpy(saved_hl, row->hl, row->rsize);
+      memset(&row->hl[match - row->render], HL_MATCH, strlen(query));
       break;
     }
   }
@@ -622,11 +644,11 @@ void editorDrawRows(struct abuf *ab) {
       // length of text we need to write on screen
       int len = E.row[filerow].rsize - E.coloff;
 
-      if (len <= 0) len == 0;
+      if (len <= 0) len = 0;
       if (len > E.screencols) len = E.screencols;
       char *s = &E.row[filerow].render[E.coloff];
       unsigned char *hl = &E.row[filerow].hl[E.coloff];
-      
+
       // keep current color to reduce escape seq
       // -1 is the default color
       int current_color = -1;
