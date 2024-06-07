@@ -41,6 +41,7 @@ enum editorKey {
 
 enum editorHighlight {
   HL_NORMAL = 0,
+  HL_COMMENT,
   HL_STRING,
   HL_NUMBER,
   HL_MATCH,
@@ -58,6 +59,7 @@ struct editorSyntax {
   char *filetype;
   // array of strings containing patters to match a file name
   char **filematch;
+  char *singleline_comment_start;
   int flags;
 };
 
@@ -96,9 +98,10 @@ char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};
 // array of struct editorSyntax, store all highlight type
 struct editorSyntax HLDB[] = {
   {
-    "c",
-    C_HL_extensions,
-    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIHHT_STRINGS
+    "c", // file type
+    C_HL_extensions, // extensions for file type
+    "//", // comment start symbol
+    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIHHT_STRINGS // highlight flags
   },
 };
 
@@ -248,6 +251,10 @@ void editorUpdateSyntax(erow *row) {
 
   if (E.syntax == NULL) return;
 
+  // comment start symbol
+  char *scs = E.syntax->singleline_comment_start;
+  int scs_len = (scs != NULL) ? strlen(scs) : 0;
+
   // keep track of whether previous char is a separtor
   int prev_sep = 1;
   // keep track of whether in a string
@@ -260,6 +267,14 @@ void editorUpdateSyntax(erow *row) {
     // highlight type of the previous character
     unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : HL_NORMAL;
     
+    // if not in string and scs is not empty, highlight line
+    if (scs_len != 0 && !instring) {
+      if (!strncmp(&row->render[i], scs, scs_len)) {
+        memset(&row->hl[i], HL_COMMENT, row->rsize - i);
+        break;
+      }
+    }
+
     // if highlight string flag is turned on, highlight strings
     if (E.syntax->flags & HL_HIGHLIHHT_STRINGS) {
       if (instring) {
@@ -307,9 +322,10 @@ void editorUpdateSyntax(erow *row) {
 
 int editorSyntaxToColor(int hl) {
   switch (hl) {
-    case HL_NUMBER: return 31; // red for numbers
-    case HL_MATCH: return 34; // blue for search match
-    case HL_STRING: return 35; // magenta for strings
+    case HL_COMMENT: return 32; // green for comments
+    case HL_NUMBER: return 36; // cyan green for numbers
+    case HL_MATCH: return 94; // bright blue for search match
+    case HL_STRING: return 31; // red for strings
     default: return 37;
   }
 }
