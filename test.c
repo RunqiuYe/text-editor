@@ -45,6 +45,8 @@ enum editorHighlight {
   HL_STRING,
   HL_NUMBER,
   HL_MATCH,
+  HL_KEYWORD1,
+  HL_KEYWORD2,
 };
 
 typedef void search_fn (char *query, int key);
@@ -59,6 +61,7 @@ struct editorSyntax {
   char *filetype;
   // array of strings containing patters to match a file name
   char **filematch;
+  char **keywords;
   char *singleline_comment_start;
   int flags;
 };
@@ -94,12 +97,22 @@ struct editorConfig E;
 
 char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};
 
+char *C_HL_keywords[] = {
+  // KEYWORD1
+  "switch", "if", "while", "for", "break", "continue", "return", "else",
+  "struct", "union", "typedef", "static", "enum", "class", "case",
+  // KEYWORD2, add | at the end to distinguish
+  "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
+  "void|", NULL
+};
+
 // Highlight database
 // array of struct editorSyntax, store all highlight type
 struct editorSyntax HLDB[] = {
   {
     "c", // file type
     C_HL_extensions, // extensions for file type
+    C_HL_keywords, // keywords in C
     "//", // comment start symbol
     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIHHT_STRINGS // highlight flags
   },
@@ -255,6 +268,9 @@ void editorUpdateSyntax(erow *row) {
   char *scs = E.syntax->singleline_comment_start;
   int scs_len = (scs != NULL) ? strlen(scs) : 0;
 
+  // keywords
+  char **keywords = E.syntax->keywords;
+
   // keep track of whether previous char is a separtor
   int prev_sep = 1;
   // keep track of whether in a string
@@ -300,6 +316,25 @@ void editorUpdateSyntax(erow *row) {
       }
     }
 
+    if (prev_sep) {
+      int j;
+      for (j = 0; keywords[j] != NULL; j++) {
+        int klen = strlen(keywords[j]);
+        int kw2 = keywords[j][klen - 1] == '|';
+        if (kw2) klen--;
+        if (!strncmp(&row->render[i], keywords[j], klen) &&
+            is_separator(row->render[i + klen])) {
+          memset(&row->hl[i], kw2 ? HL_KEYWORD2 : HL_KEYWORD1, klen);
+          i += klen;
+          break;
+        }
+      }
+      if (keywords[j] != NULL) {
+        prev_sep = 0;
+        continue;
+      }
+    }
+
     // if highlight number flag is turned on, highlight numbers
     if (E.syntax->flags & HL_HIGHLIGHT_NUMBERS) {
       if ((isdigit(c) && (prev_sep || prev_hl == HL_NUMBER)) ||
@@ -326,6 +361,8 @@ int editorSyntaxToColor(int hl) {
     case HL_NUMBER: return 36; // cyan green for numbers
     case HL_MATCH: return 94; // bright blue for search match
     case HL_STRING: return 31; // red for strings
+    case HL_KEYWORD1: return 35; // magenta for keyword1 
+    case HL_KEYWORD2: return 34; // blue for keyword2
     default: return 37;
   }
 }
