@@ -1,4 +1,4 @@
-`lovas-E0.c0`
+## `lovas-E0.c0`
 
 ```c
 /**************************************************************************/
@@ -170,7 +170,7 @@ int main() {
 
 
 
-`c0lib/curses-view.h0`
+## `c0lib/curses-view.h0`
 
 ```c
 /* curses functions c_*, my functions cc_* -- for details, "man ncurses" */
@@ -227,7 +227,7 @@ bool cc_key_is_down(int key);
 
 
 
-`c0lib/curses.h0`
+## `c0lib/curses.h0`
 
 ```c
 /* curses functions c_*, my functions cc_* -- for details, "man ncurses" */
@@ -284,7 +284,7 @@ bool cc_key_is_down(int key);
 
 
 
-`tbuf.c0`
+## `tbuf.c0`
 
 ```c
 /**************************************************************************/
@@ -489,7 +489,7 @@ int tbuf_col(tbuf* B)
 
 
 
-`editor.c0`
+## `editor.c0`
 
 ```c
 /**************************************************************************/
