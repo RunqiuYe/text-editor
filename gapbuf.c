@@ -47,9 +47,9 @@ void gapbuf_forward(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
   REQUIRES(!gapbuf_at_right(gb));
 
-  if (gb->frontlen + 1 >= gb->limit) {
+  if (gb->frontlen + 2 >= gb->limit) {
     // if front buffer is full, reallocate and double size
-    size_t new_limit = 2 * gb->limit;
+    size_t new_limit = 3 * gb->limit;
     char* new_front = xcalloc(new_limit, sizeof(char));
     char* new_back = xcalloc(new_limit, sizeof(char));
     
@@ -66,7 +66,7 @@ void gapbuf_forward(gapbuf* gb) {
     gb->front = new_front;
     gb->back = new_back;
   }
-  ASSERT(gb->frontlen + 1 < gb->limit);
+  ASSERT(gb->frontlen + 2 < gb->limit);
 
   char c = gb->back[gb->backlen - 1];
   ASSERT(c != '\0');
@@ -83,9 +83,9 @@ void gapbuf_backward(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
   REQUIRES(!gapbuf_at_left(gb));
 
-  if (gb->backlen + 1 >= gb->limit) {
+  if (gb->backlen + 2 >= gb->limit) {
     // if backbuffer is full, reallocate and double size
-    size_t new_limit = 2 * gb->limit;
+    size_t new_limit = 3 * gb->limit;
     char* new_front = xcalloc(new_limit, sizeof(char));
     char* new_back = xcalloc(new_limit, sizeof(char));
     
@@ -102,7 +102,7 @@ void gapbuf_backward(gapbuf* gb) {
     gb->front = new_front;
     gb->back = new_back;
   }
-  ASSERT(gb->backlen + 1 < gb->limit);
+  ASSERT(gb->backlen + 2 < gb->limit);
 
   char c = gb->front[gb->frontlen - 1];
   ASSERT(c != '\0');
@@ -118,9 +118,9 @@ void gapbuf_backward(gapbuf* gb) {
 void gapbuf_insert(gapbuf* gb, char c) {
   REQUIRES(is_gapbuf(gb));
 
-  if (gb->frontlen + 1 >= gb->limit) {
+  if (gb->frontlen + 2 >= gb->limit) {
     // if front buffer is full, reallocate and double size
-    size_t new_limit = 2 * gb->limit;
+    size_t new_limit = 3 * gb->limit;
     char* new_front = xcalloc(new_limit, sizeof(char));
     char* new_back = xcalloc(new_limit, sizeof(char));
     
@@ -137,7 +137,7 @@ void gapbuf_insert(gapbuf* gb, char c) {
     gb->front = new_front;
     gb->back = new_back;
   }
-  ASSERT(gb->frontlen + 1 < gb->limit);
+  ASSERT(gb->frontlen + 2 < gb->limit);
 
   gb->front[gb->frontlen] = c;
   gb->frontlen += 1;
