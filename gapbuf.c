@@ -53,7 +53,7 @@ void gapbuf_forward(gapbuf* gb) {
     char* new_front = xcalloc(new_limit, sizeof(char));
     char* new_back = xcalloc(new_limit, sizeof(char));
     
-    int i;
+    size_t i;
     for (i = 0; i < gb->frontlen; i++) {
       new_front[i] = gb->front[i];
     }
@@ -89,7 +89,7 @@ void gapbuf_backward(gapbuf* gb) {
     char* new_front = xcalloc(new_limit, sizeof(char));
     char* new_back = xcalloc(new_limit, sizeof(char));
     
-    int i;
+    size_t i;
     for (i = 0; i < gb->frontlen; i++) {
       new_front[i] = gb->front[i];
     }
@@ -124,7 +124,7 @@ void gapbuf_insert(gapbuf* gb, char c) {
     char* new_front = xcalloc(new_limit, sizeof(char));
     char* new_back = xcalloc(new_limit, sizeof(char));
     
-    int i;
+    size_t i;
     for (i = 0; i < gb->frontlen; i++) {
       new_front[i] = gb->front[i];
     }
@@ -171,7 +171,7 @@ char gapbuf_delete_right(gapbuf* gb) {
 
 int gapbuf_row(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
-  int i;
+  size_t i;
   int row = 1;
   for (i = 0; i < gb->frontlen; i++) {
     if (gb->front[i] == '\n') row++;
@@ -181,23 +181,24 @@ int gapbuf_row(gapbuf* gb) {
 
 int gapbuf_col(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
-  int i;
+  size_t i;
   int col = 0;
   for (i = 0; i < gb->frontlen; i++) {
     if (gb->front[i] == '\n') col = 0;
     else col++;
   }
+  return col;
 }
 
 char* gapbuf_free(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
   int len = gb->frontlen + gb->backlen;
   char* s = xcalloc(len+1, sizeof(char));
-  int i;
+  size_t i;
   for (i = 0; i < gb->frontlen; i++) {
     s[i] = gb->front[i];
   }
-  int j;
+  size_t j;
   for (j = 0; j < gb->backlen; j++) {
     s[len-1-j] = gb->back[j];
   }
@@ -211,11 +212,11 @@ char* gapbuf_str(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
   int len = gb->frontlen + gb->backlen;
   char* s = xcalloc(len+1, sizeof(char));
-  int i;
+  size_t i;
   for (i = 0; i < gb->frontlen; i++) {
     s[i] = gb->front[i];
   }
-  int j;
+  size_t j;
   for (j = 0; j < gb->backlen; j++) {
     s[len-1-j] = gb->back[j];
   }
@@ -226,16 +227,20 @@ void gapbuf_print(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
   int len = gb->frontlen + gb->backlen;
   char* s = xcalloc(len+3, sizeof(char));
-  int i;
+  size_t i;
   for (i = 0; i < gb->frontlen; i++) {
     s[i] = gb->front[i];
   }
-  s[i+1] = '[';
-  s[i+2] = ']';
-  int j;
+  ASSERT(i == gb->frontlen);
+  s[i] = '[';
+  s[i+1] = ']';
+  size_t j;
   for (j = 0; j < gb->backlen; j++) {
-    s[len-1-j] = gb->back[j];
+    s[len+1-j] = gb->back[j];
   }
-  printf("%s", s);
+  printf("-- gapbuf print -- \n");
+  printf("content: %s\n", s);
+  printf("limit: %zu\n", gb->limit);
+  printf("------------------ \n");
   free(s);
 }
