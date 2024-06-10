@@ -8,6 +8,8 @@
 int main(void) {
   printf("%s", "Testing gap buffer library...\n");
 
+  char *s = "apple";
+
   // basics tests
   gapbuf* A = gapbuf_new(10);
   assert(is_gapbuf(A));
@@ -28,6 +30,10 @@ int main(void) {
   assert(gapbuf_row(A) == 1);
   assert(gapbuf_col(A) == 5);
   // gapbuf_print(A); // apple[]
+
+  char* s1 = gapbuf_str(A);
+  assert(strcmp(s1, s) == 0);
+  free(s1);
   
   gapbuf_backward(A);
   assert(is_gapbuf(A));
@@ -36,6 +42,10 @@ int main(void) {
   assert(gapbuf_row(A) == 1);
   assert(gapbuf_col(A) == 4);
   // gapbuf_print(A); // appl[]e
+  
+  char* s2 = gapbuf_str(A);
+  assert(strcmp(s2, s) == 0);
+  free(s2);
 
   gapbuf_backward(A);
   gapbuf_backward(A);
@@ -47,6 +57,14 @@ int main(void) {
   assert(gapbuf_row(A) == 1);
   assert(gapbuf_col(A) == 0);
   gapbuf_print(A); // []apple
+
+  char* s3 = gapbuf_str(A);
+  assert(strcmp(s3, s) == 0);
+  free(s3);
+
+  char* s4 = gapbuf_free(A);
+  assert(strcmp(s4, s) == 0);
+  free(s4);
 
   printf("Basics tests passed!\n");
 
@@ -73,6 +91,14 @@ int main(void) {
   assert(gapbuf_col(B) == 5);
   gapbuf_print(B); // apple[]
 
+  char* s5 = gapbuf_str(B);
+  assert(strcmp(s5, s) == 0);
+  free(s5);
+
+  char* s6 = gapbuf_free(B);
+  assert(strcmp(s6, s) == 0);
+  free(s6);
+
   // special case: start with array size 1
   gapbuf* C = gapbuf_new(1);
   assert(is_gapbuf(C));
@@ -94,6 +120,9 @@ int main(void) {
   gapbuf_backward(C);
   assert(gapbuf_row(C) == 1);
   assert(gapbuf_col(C) == 5);
+
+  char* s7 = gapbuf_free(C);
+  free(s7);
 
   printf("All test cases passed!\n");
 }
