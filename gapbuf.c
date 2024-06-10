@@ -155,4 +155,15 @@ char gapbuf_delete(gapbuf* gb) {
   return c;
 }
 
+char gapbuf_delete_right(gapbuf* gb) {
+  REQUIRES(is_gapbuf(gb));
+  REQUIRES(!gapbuf_at_right(gb));
+
+  gapbuf_forward(gb);
+  char c = gapbuf_delete(gb);
+
+  ENSURES(is_gapbuf(gb));
+  return c;
+}
+
 

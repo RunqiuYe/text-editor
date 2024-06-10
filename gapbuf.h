@@ -25,6 +25,7 @@ void gapbuf_forward(gapbuf* gb);            // move the cursor forward (to the r
 void gapbuf_backward(gapbuf* gb);           // move the cursor backward (to the left)
 void gapbuf_insert(gapbuf* gb, char c);     // insert a character before cursor
 char gapbuf_delete(gapbuf* gb);             // delete a character before cursor and return deleted char
+char gapbuf_delete_right(gapbuf* gb);       // delete a character after the cursor and return deleted char
 
 // void strbuf_add(strbuf *sb, char *str, size_t len);
 // void strbuf_addstr(strbuf *sb, char *str);
