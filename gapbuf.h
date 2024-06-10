@@ -35,6 +35,6 @@ int gapbuf_col(gapbuf* gb);                 // return column of cursor
 
 char* gapbuf_free(gapbuf* gb);              // free allocated gapbuffer, and return the string contained
 char* gapbuf_str(gapbuf* gb);               // the string contained in the text buffer
-char* gapbuf_print(gapbuf* gb);             // print the content of gapbuf for debugging
+void gapbuf_print(gapbuf* gb);              // print the content of gapbuf for debugging
 
 #endif
