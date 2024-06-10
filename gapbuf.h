@@ -23,13 +23,17 @@ bool gapbuf_at_right(gapbuf* gb);           // return true if cursor(gap) is at 
 gapbuf* gapbuf_new(size_t init_limit);      // create new empty gap buffer
 void gapbuf_forward(gapbuf* gb);            // move the cursor forward (to the right)
 void gapbuf_backward(gapbuf* gb);           // move the cursor backward (to the left)
-void gapbuf_insert(gapbuf* gb);             // insert a character before cursor
+void gapbuf_insert(gapbuf* gb, char c);     // insert a character before cursor
 char gapbuf_delete(gapbuf* gb);             // delete a character before cursor and return deleted char
+
+// void strbuf_add(strbuf *sb, char *str, size_t len);
+// void strbuf_addstr(strbuf *sb, char *str);
 
 int gapbuf_row(gapbuf* gb);                 // return row of cursor
 int gapbuf_col(gapbuf* gb);                 // return column of cursor
 
-char* gapbuf_free(gapbuf* gb);              // free allocated gapbuffer
-// char* gapbuf_str(gapbuf* gb);
+char* gapbuf_free(gapbuf* gb);              // free allocated gapbuffer, and return the string contained
+char* gapbuf_str(gapbuf* gb);               // the string contained in the text buffer
+char* gapbuf_print(gapbuf* gb);             // print the content of gapbuf for debugging
 
 #endif
