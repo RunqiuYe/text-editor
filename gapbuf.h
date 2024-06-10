@@ -10,8 +10,8 @@ struct gapbuf_header {
   size_t frontlen;    // length of front string, frontlen < limit
   size_t backlen;     // length of back string, backlen < limit
   size_t limit;       // bytes allocated for front and back buffer
-  					  // (we require them to have the same length),
-  					  // limit > 0
+  					          // (we require them to have the same length),
+  					          // limit > 0
 };
 typedef struct gapbuf_header gapbuf;
 
