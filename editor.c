@@ -61,3 +61,38 @@ void editor_backward(editor* E) {
   }
   ENSURES(is_editor(E));
 }
+
+void editor_insert(editor* E, char c) {
+  REQUIRES(is_editor(E));
+  gapbuf_insert(E->buffer, c);
+  if (c == '\n') {
+    E->row += 1;
+    E->col = 0;
+    E->numrows += 1;
+  }
+  else {
+    E->col += 1;
+  }
+  ENSURES(is_editor(E));
+}
+
+void editor_delete(editor* E) {
+  REQUIRES(is_editor(E));
+  char c = gapbuf_delete(E->buffer);
+  if (c == '\n') {
+    E->row -= 1;
+    E->col = gapbuf_col(E->buffer);
+    E->numrows -= 1;
+  }
+  else {
+    E->col -= 1;
+  }
+  ENSURES(is_editor(E));
+}
+
+void editor_free(editor* E) {
+  REQUIRES(is_editor(E));
+  char* s = gapbuf_free(E->buffer);
+  free(s);
+  free(E);
+}
