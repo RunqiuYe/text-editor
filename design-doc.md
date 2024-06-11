@@ -17,13 +17,13 @@ We use two strings to implement the gap buffer — one string before the gap and
 
 ```c
 struct gapbuf_header {
-    char* front;        // string before the gap
-    char* back;         // string after the gap, inverted
-    size_t frontlen;    // length of front string, frontlen < limit
-    size_t backlen;     // length of back string, backlen < limit
-    size_t limit;       // bytes allocated for front and back buffer
-  											// (we require them to have the same length),
-  											// limit > 0
+  char* front;        // string before the gap
+  char* back;         // string after the gap, inverted
+  size_t frontlen;    // length of front string, frontlen < limit
+  size_t backlen;     // length of back string, backlen < limit
+  size_t limit;       // bytes allocated for front and back buffer
+  					          // (we require them to have the same length),
+  					          // limit > 0
 };
 typedef struct gapbuf_header gapbuf;
 ```
@@ -32,20 +32,20 @@ To illustrate, consider for example a gap buffer `gapbuf* gb` which holds the te
 
 ```c
 gb->front = 'a'  'p'  'p'  'l'  'e'  '\0' '\0' '\0'
-gb->back =  'e'  'i'  'p'  '\0' '\0' '\0' '\0' '\0'
+gb->back  = 'e'  'i'  'p'  '\0' '\0' '\0' '\0' '\0'
 gb->frontlen = 5
-gb->backlen = 3
-gb->limit = 8
+gb->backlen  = 3
+gb->limit    = 8
 ```
 
 Moving the cursor forward, we will have `applep[]ie`, and the content will become
 
 ```c
 gb->front = 'a'  'p'  'p'   'l'  'e'  'p'  '\0' '\0'
-gb->back =  'e'  'i'  '\0'  '\0' '\0' '\0' '\0' '\0'
+gb->back  = 'e'  'i'  '\0'  '\0' '\0' '\0' '\0' '\0'
 gb->frontlen = 6
-gb->backlen = 2
-gb->limit = 8
+gb->backlen  = 2
+gb->limit    = 8
 ```
 
 Since we have the length of both strings recorded in `frontlen` and `backlen`, we only need to change the end of `back` to `'\0'` (which is the start of the string we read after the cursor) and the end of `front` to the corresponding characters.
@@ -54,10 +54,10 @@ Inserting `L` at the cursor position, we will have `applepL[]ie` and the content
 
 ```c
 gb->front = 'a'  'p'  'p'   'l'  'e'  'p'  'L' '\0'
-gb->back =  'e'  'i'  '\0'  '\0' '\0' '\0' '\0' '\0'
+gb->back  = 'e'  'i'  '\0'  '\0' '\0' '\0' '\0' '\0'
 gb->frontlen = 7
-gb->backlen = 2
-gb->limit = 8
+gb->backlen  = 2
+gb->limit    = 8
 ```
 
 Notice that the `front` buffer is now full, we double the length of it. To make the `back` buffer also having the same length, we also need to double the length of the back buffer. In this way, insertions, deletions, and cursor movement will all have `O(1)` amortized cost, achieving great efficiency.
@@ -70,18 +70,26 @@ bool is_gapbuf(gapbuf* gb);                 // representation invariant
 bool gapbuf_at_left(gapbuf* gb);            // return true if cursor(gap) is at leftmost position
 bool gapbuf_at_right(gapbuf* gb);           // return true if cursor(gap) is at rightmost position
 
-gapbuf* gapbuf_new(size_t init_limit);      // create new empty gap buffer
+gapbuf* gapbuf_new(size_t init_limit);      // create new empty gap buffer with given limit
 void gapbuf_forward(gapbuf* gb);            // move the cursor forward (to the right)
 void gapbuf_backward(gapbuf* gb);           // move the cursor backward (to the left)
-void gapbuf_insert(gapbuf* gb);             // insert a character before cursor
-char gapbuf_delete(gapbuf* gb);             // delete a character before cursor and return deleted char
+void gapbuf_insert(gapbuf* gb, char c);     // insert a character before cursor
+char gapbuf_delete(gapbuf* gb);             // delete a character before cursor 
+	                                          // and return deleted char
+char gapbuf_delete_right(gapbuf* gb);       // delete a character after the cursor 
+                                            // and return deleted char
+
 
 int gapbuf_row(gapbuf* gb);                 // return row of cursor
 int gapbuf_col(gapbuf* gb);                 // return column of cursor
 
 char* gapbuf_free(gapbuf* gb);              // free allocated gapbuffer
-// char* gapbuf_str(gapbuf* gb);
+                                            // and return the string contained
+char* gapbuf_str(gapbuf* gb);               // the string contained in the text buffer
+void gapbuf_print(gapbuf* gb);              // print the content of gapbuf for debugging
+
 ```
 
+## Editor
 
-
+We want to create and editor that knows the current row and column number, together with the total row numers.
