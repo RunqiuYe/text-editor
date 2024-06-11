@@ -202,22 +202,11 @@ size_t gapbuf_numrows(gapbuf* gb) {
   return row;
 }
 
-char* gapbuf_free(gapbuf* gb) {
+void gapbuf_free(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
-  size_t len = gb->frontlen + gb->backlen;
-  char* s = xcalloc(len+1, sizeof(char));
-  size_t i;
-  for (i = 0; i < gb->frontlen; i++) {
-    s[i] = gb->front[i];
-  }
-  size_t j;
-  for (j = 0; j < gb->backlen; j++) {
-    s[len-1-j] = gb->back[j];
-  }
   free(gb->front);
   free(gb->back);
   free(gb);
-  return s;
 }
 
 char* gapbuf_str(gapbuf* gb) {

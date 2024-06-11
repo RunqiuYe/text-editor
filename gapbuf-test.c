@@ -62,9 +62,7 @@ int main(void) {
   assert(strcmp(s3, s) == 0);
   free(s3);
 
-  char* s4 = gapbuf_free(A);
-  assert(strcmp(s4, s) == 0);
-  free(s4);
+  gapbuf_free(A);
 
   printf("Basics tests passed!\n");
 
@@ -95,9 +93,7 @@ int main(void) {
   assert(strcmp(s5, s) == 0);
   free(s5);
 
-  char* s6 = gapbuf_free(B);
-  assert(strcmp(s6, s) == 0);
-  free(s6);
+  gapbuf_free(B);
 
   // special case: start with array size 1
   gapbuf* C = gapbuf_new(1);
@@ -134,8 +130,7 @@ int main(void) {
   assert(gapbuf_numrows(C) == 4);
   gapbuf_print(C); // APPLE\nA\nP\n[]
 
-  char* s7 = gapbuf_free(C);
-  free(s7);
+  gapbuf_free(C);
 
   printf("All test cases passed!\n");
 }

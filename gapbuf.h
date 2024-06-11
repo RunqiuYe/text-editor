@@ -34,7 +34,7 @@ size_t gapbuf_row(gapbuf* gb);                 // row of cursor position
 size_t gapbuf_col(gapbuf* gb);                 // column of cursor position
 size_t gapbuf_numrows(gapbuf* gb);             // number of rows in gap buffer
 
-char* gapbuf_free(gapbuf* gb);              // free allocated gapbuffer, and return the string contained
+void gapbuf_free(gapbuf* gb);              // free allocated gapbuffer, and return the string contained
 char* gapbuf_str(gapbuf* gb);               // the string contained in the text buffer
 void gapbuf_print(gapbuf* gb);              // print the content of gapbuf for debugging
 
