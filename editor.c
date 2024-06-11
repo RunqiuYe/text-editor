@@ -92,7 +92,6 @@ void editor_delete(editor* E) {
 
 void editor_free(editor* E) {
   REQUIRES(is_editor(E));
-  char* s = gapbuf_free(E->buffer);
-  free(s);
+  gapbuf_free(E->buffer);
   free(E);
 }
