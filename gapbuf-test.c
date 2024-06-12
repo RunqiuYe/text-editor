@@ -133,4 +133,6 @@ int main(void) {
   gapbuf_free(C);
 
   printf("All test cases passed!\n");
+
+  return 0;
 }
