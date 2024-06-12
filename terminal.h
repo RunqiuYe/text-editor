@@ -18,3 +18,10 @@ int getWindowSize(size_t* numrows, size_t* numcols);
 int getCursorPosition(size_t* row, size_t* col);
 void setWindowSize(editor* E);
 
+void refreshScreen(editor* E);
+void render(editor* E);
+
+void moveCursor(editor* E, int key);
+
+int readKey(void);
+void processKey(editor* E);

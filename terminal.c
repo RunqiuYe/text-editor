@@ -7,10 +7,26 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 #include "lib/contracts.h"
 #include "lib/xalloc.h"
 #include "gapbuf.h"
 #include "editor.h"
+
+#define CTRL_KEY(k) ((k) & 0x1f)
+
+enum key {
+  BACKSPACE = 127,
+  ARROW_LEFT = 1000,
+  ARROW_RIGHT,
+  ARROW_UP,
+  ARROW_DOWN,
+  DEL_KEY,
+  HOME_KEY,
+  END_KEY,
+  PAGE_UP,
+  PAGE_DOWN,
+};
 
 void die(const char* s) {
   write(STDOUT_FILENO, "\x1b[2J", 4);
@@ -84,3 +100,121 @@ void setWindowSize(editor* E) {
   }
 }
 
+void render(editor* E) {
+  for (size_t i = 0; i < E->screenrows; i++) {
+    write(STDOUT_FILENO, "~", 1);
+    if (i < E->screenrows - 1) {
+      write(STDOUT_FILENO, "\n", 2);
+    }
+  }
+}
+
+void refreshScreen(editor* E) {
+  write(STDOUT_FILENO, "\x1b[?25l", 6);
+  write(STDOUT_FILENO, "\x1b[2J", 4);
+  write(STDOUT_FILENO, "\x1b[H", 3);
+  write(STDOUT_FILENO, "\x1b[?25h", 6);
+  render(E);
+}
+
+void moveCursor(editor* E, int key) {
+  switch (key) {
+    case ARROW_LEFT: {
+      editor_backward(E);
+      break;
+    }
+    case ARROW_RIGHT: {
+      editor_forward(E);
+      break;
+    }
+    case ARROW_UP: {
+      /*TO DO*/
+      break;
+    }
+    case ARROW_DOWN: {
+      /*TO DO*/
+      break;
+    }
+  }
+}
+
+int readKey(void) {
+  int nread;
+  char c;
+  while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
+    if (nread == -1 && errno != EAGAIN) die("read");
+  }
+
+  if (c == '\x1b') {
+    // If start with <esc>, read more chars for arrows keys
+    // and page up/down keys
+    char seq[3];
+    if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
+    if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
+
+    if (seq[0] == '[') {
+      // Page Up and Page Down Key
+      // Page Up <esc>[5~
+      // Page Up <esc>[6~
+      if (seq[1] >= '0' && seq[1] <= '9') {
+        if (read(STDIN_FILENO, &seq[2], 1) != 1) return '\x1b';
+        if (seq[2] == '~') {
+          switch (seq[1]) {
+            case '1': return HOME_KEY;
+            case '3': return DEL_KEY;
+            case '4': return END_KEY;
+            case '5': return PAGE_UP;
+            case '6': return PAGE_DOWN;
+            case '7': return HOME_KEY;
+            case '8': return END_KEY;
+          }
+        }
+      }
+      else {
+        // Arrow Keys
+        // Up <esc>[A
+        // Down <esc>[B
+        // Right <esc>[C
+        // Left <esc>[D
+        switch (seq[1]) {
+          case 'A': return ARROW_UP;
+          case 'B': return ARROW_DOWN;
+          case 'C': return ARROW_RIGHT;
+          case 'D': return ARROW_LEFT;
+          case 'H': return HOME_KEY;
+          case 'F': return END_KEY;
+        }
+      }
+    }
+    else if (seq[0] == 'O') {
+      switch (seq[1]) {
+        case 'H': return HOME_KEY;
+        case 'F': return END_KEY;
+      }
+    }
+    return '\x1b';
+  } 
+  else {
+    return c;
+  }
+}
+
+void processKey(editor* E) {
+  (void) E;
+  int c = readKey();
+
+  switch (c) {
+    case CTRL_KEY('q'): {
+      write(STDOUT_FILENO, "\x1b[2J", 4);
+      write(STDOUT_FILENO, "\x1b[H", 3);
+      exit(0);
+      break;
+    }
+    case ARROW_UP:
+    case ARROW_DOWN:
+    case ARROW_LEFT:
+    case ARROW_RIGHT: {
+      moveCursor(E, c);
+    }
+  }
+}
