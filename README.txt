@@ -29,9 +29,9 @@ Compiling C code without contracts:
 Editor interface
 
 Compiling C code with contracts:
-   % gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic editor.c editor-test.c
+   % gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c editor-test.c
    % leaks --atExit -- ./a.out
 
 Compiling C code without contracts:
-   % gcc -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic editor.c editor-test.c
+   % gcc -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c editor-test.c
    % leaks --atExit -- ./a.out
