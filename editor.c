@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <termios.h>
 #include "lib/contracts.h"
 #include "lib/xalloc.h"
 #include "gapbuf.h"
@@ -17,10 +18,14 @@ bool is_editor(editor* E) {
 
 editor* editor_new(void) {
   editor* E = xmalloc(sizeof(editor));
+
   E->buffer = gapbuf_new(10);
   E->row = 1;
   E->col = 0;
   E->numrows = 1;
+
+  E->screenrows = 0;
+  E->screencols = 0;
 
   ENSURES(is_editor(E));
   return E;

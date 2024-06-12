@@ -70,26 +70,74 @@ bool is_gapbuf(gapbuf* gb);                 // representation invariant
 bool gapbuf_at_left(gapbuf* gb);            // return true if cursor(gap) is at leftmost position
 bool gapbuf_at_right(gapbuf* gb);           // return true if cursor(gap) is at rightmost position
 
-gapbuf* gapbuf_new(size_t init_limit);      // create new empty gap buffer with given limit
+gapbuf* gapbuf_new(size_t init_limit);      // create new empty gap buffer
 void gapbuf_forward(gapbuf* gb);            // move the cursor forward (to the right)
 void gapbuf_backward(gapbuf* gb);           // move the cursor backward (to the left)
 void gapbuf_insert(gapbuf* gb, char c);     // insert a character before cursor
-char gapbuf_delete(gapbuf* gb);             // delete a character before cursor 
-	                                          // and return deleted char
-char gapbuf_delete_right(gapbuf* gb);       // delete a character after the cursor 
-                                            // and return deleted char
+char gapbuf_delete(gapbuf* gb);             // delete a character before cursor and return deleted char
+char gapbuf_delete_right(gapbuf* gb);       // delete a character after cursor and return deleted char
 
+// void strbuf_add(strbuf *sb, char *str, size_t len);
+// void strbuf_addstr(strbuf *sb, char *str);
 
-int gapbuf_row(gapbuf* gb);                 // return row of cursor
-int gapbuf_col(gapbuf* gb);                 // return column of cursor
+size_t gapbuf_row(gapbuf* gb);                 // row of cursor position
+size_t gapbuf_col(gapbuf* gb);                 // column of cursor position
+size_t gapbuf_numrows(gapbuf* gb);             // number of rows in gap buffer
 
-char* gapbuf_free(gapbuf* gb);              // free allocated gapbuffer
-                                            // and return the string contained
+void gapbuf_free(gapbuf* gb);              // free allocated gapbuffer, and return the string contained
 char* gapbuf_str(gapbuf* gb);               // the string contained in the text buffer
 void gapbuf_print(gapbuf* gb);              // print the content of gapbuf for debugging
 
 ```
 
-## Editor
+## Editor and gap buffer
 
-We want to create and editor that knows the current row and column number, together with the total row numers.
+We want to use the gap buffer to hold the text in the editor. Since we want to show the current location of cursor on the screen, we need to include the row and the column of the cursor in the text, together with the number of rows. Hence we define the editor struct as the following for now.
+
+```c
+struct editor_header {
+  gapbuf* buffer;
+  size_t row;
+  size_t col;
+  size_t numrows;
+};
+typedef struct editor_header editor;
+```
+
+ Based on the description, the representation invariant should ensures `buffer` is a gap buffer. The `row`, `column`, and `numrows` field should also show the correct value. That is,
+
+```c 
+bool is_editor(editor* E) {
+  if (E == NULL) return false;
+  if (!is_gapbuf(E->buffer)) return false;
+  if (E->row != gapbuf_row(E->buffer)) return false;
+  if (E->col != gapbuf_col(E->buffer)) return false;
+  if (E->numrows != gapbuf_numrows(E->buffer)) return false;
+  return true;
+}
+```
+
+where we extend the `gapbuf` interface with a new function `gapbuf_numrows`. The editor interface contains the following functions.
+
+```c
+bool is_editor(editor* E);              // representation invariant
+
+editor* editor_new(void); 	            // create a new and empty editor
+void editor_forward(editor* E); 	      // move the cursor forward, to the right
+void editor_backward(editor* E); 	      // move the cursor backward, to the left
+void editor_insert(editor* E, char c); 	// insert c to the cursor’s left
+void editor_delete(editor* E); 	        // remove the node to the cursor’s left
+
+void editor_free(editor* E);            // free allocated space for editor
+```
+
+Note that the user will interact with the editor directly. Therefore, when the cursor is at the rightmost of the editor, moving forward should keep the editor unchanged instead of raising and error. The same is true for moving backward and delete.
+
+Now we finish the part where the editor interacts with the buffer (text). Next we want to add how the editor interacts with our terminal, since that's where the text editor is going to be.
+
+## Editor and terminal
+
+
+
+
+
