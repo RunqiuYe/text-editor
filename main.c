@@ -13,19 +13,13 @@
 int main(void) {
   editor* E = editor_new();
   enableRawMode(E);
+  setWindowSize(E);
 
   bool go = true;
 
   while (go) {
-    char c;
-    read(STDIN_FILENO, &c, 1);
-    if (iscntrl(c)) {
-      printf("%d\n", c);
-    } 
-    else {
-      printf("%d ('%c')\n", c, c);
-    }
-    if (c == CTRL_KEY('q')) go = false;
+    refreshScreen(E);
+    processKey(E);
   }
 
   disableRawMode(E);
