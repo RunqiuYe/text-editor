@@ -17,7 +17,7 @@ typedef struct editor_header editor;
 
 bool is_editor(editor* E);              // representation invariant
 
-editor* editor_new(); 	                // create a new and empty editor
+editor* editor_new(void); 	            // create a new and empty editor
 void editor_forward(editor* E); 	      // move the cursor forward, to the right
 void editor_backward(editor* E); 	      // move the cursor backward, to the left
 void editor_insert(editor* E, char c); 	// insert c to the cursor’s left

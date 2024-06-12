@@ -15,7 +15,7 @@ bool is_editor(editor* E) {
   return true;
 }
 
-editor* editor_new() {
+editor* editor_new(void) {
   editor* E = xmalloc(sizeof(editor));
   E->buffer = gapbuf_new(10);
   E->row = 1;
