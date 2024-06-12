@@ -199,15 +199,14 @@ int readKey(void) {
   }
 }
 
-void processKey(editor* E) {
-  (void) E;
+void processKey(editor* E, bool* go) {
   int c = readKey();
 
   switch (c) {
     case CTRL_KEY('q'): {
+      *go = false;
       write(STDOUT_FILENO, "\x1b[2J", 4);
       write(STDOUT_FILENO, "\x1b[H", 3);
-      exit(0);
       break;
     }
     case ARROW_UP:

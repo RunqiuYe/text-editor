@@ -15,15 +15,17 @@ int main(void) {
   enableRawMode(E);
   setWindowSize(E);
 
-  bool go = true;
+  bool* go = xcalloc(1, sizeof(bool));
+  *go = true;
 
-  while (go) {
+  while (*go) {
     refreshScreen(E);
-    processKey(E);
+    processKey(E, go);
   }
 
   disableRawMode(E);
   editor_free(E);
-  printf("Thanks for using RYe's editor");
+  free(go);
+  printf("Thanks for using RYe's editor\n");
   return 0;
 }

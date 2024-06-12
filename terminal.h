@@ -24,4 +24,4 @@ void render(editor* E);
 void moveCursor(editor* E, int key);
 
 int readKey(void);
-void processKey(editor* E);
+void processKey(editor* E, bool* go);
