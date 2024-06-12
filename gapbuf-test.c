@@ -6,7 +6,7 @@
 #include "gapbuf.h"
 
 int main(void) {
-  printf("%s", "Testing gap buffer library...\n");
+  printf("Testing gap buffer library...\n");
 
   char *s = "apple";
 
