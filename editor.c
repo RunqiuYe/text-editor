@@ -26,6 +26,8 @@ editor* editor_new(void) {
 
   E->screenrows = 0;
   E->screencols = 0;
+  E->rowoff = 0;
+  E->coloff = 0;
 
   ENSURES(is_editor(E));
   return E;

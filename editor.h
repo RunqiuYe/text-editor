@@ -17,6 +17,8 @@ struct editor_header {
   struct termios orig_terminal;
   size_t screenrows;
   size_t screencols;
+  size_t rowoff;
+  size_t coloff;
 };
 typedef struct editor_header editor;
 
