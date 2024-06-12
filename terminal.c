@@ -214,6 +214,7 @@ void processKey(editor* E, bool* go) {
     case ARROW_LEFT:
     case ARROW_RIGHT: {
       moveCursor(E, c);
+      break;
     }
   }
 }
