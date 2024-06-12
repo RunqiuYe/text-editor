@@ -6,6 +6,7 @@
 #include <termios.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
 #include "lib/contracts.h"
 #include "lib/xalloc.h"
 #include "gapbuf.h"
@@ -45,3 +46,41 @@ void disableRawMode(editor* E) {
     die("tcsetattr");
   }
 }
+
+int getCursorPosition(size_t* row, size_t* col) {
+  char buf[32];
+  size_t i = 0;
+
+  if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
+
+  while (i < sizeof(buf) - 1) {
+    if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
+    if (buf[i] == 'R') break;
+    i++;
+  }
+  buf[i] = '\0';
+  
+  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
+  if (sscanf(&buf[2], "%zd;%zd", row, col) != 2) return -1;
+  return 0;
+}
+
+int getWindowSize(size_t* numrows, size_t* numcols) {
+  struct winsize ws;
+  if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
+    if (write(STDOUT_FILENO, "\x1b[999C\x1b[999B", 12) != 12) return -1;
+    return getCursorPosition(numrows, numcols);
+  } 
+  else {
+    *numcols = ws.ws_col;
+    *numrows = ws.ws_row;
+    return 0;
+  }
+}
+
+void setWindowSize(editor* E) {
+  if (getWindowSize(&E->screenrows, &E->screencols) == -1) {
+    die("getWindowSize");
+  }
+}
+

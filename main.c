@@ -25,7 +25,7 @@ int main(void) {
     else {
       printf("%d ('%c')\n", c, c);
     }
-    if (c == 'q') go = false;
+    if (c == CTRL_KEY('q')) go = false;
   }
 
   disableRawMode(E);
