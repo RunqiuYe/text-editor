@@ -101,12 +101,6 @@ void render(editor* E) {
   write(STDOUT_FILENO, s, len);
   free(s);
 
-  // int* row = NULL;
-  // int* col = NULL;
-  // getCursorPosition(row, col);
-  // free(row);
-  // free(col);
-
   write(STDOUT_FILENO, "\n", 1);
   size_t i;
   for (i = E->numrows; i < E->screenrows; i++) {
@@ -114,9 +108,7 @@ void render(editor* E) {
     if (i < E->screenrows - 1) {
       write(STDOUT_FILENO, "\n", 1);
     }
-  }
-
-  
+  } 
 }
 
 void refreshScreen(editor* E) {
