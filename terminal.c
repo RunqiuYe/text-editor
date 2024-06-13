@@ -101,33 +101,57 @@ void render(editor* E) {
   // coloff + screencols = first invisible col
 
   gapbuf* gb = E->buffer;
+  char* front = gb->front;
+  char* back = gb->back;
+  size_t frontlen = gb->frontlen;
+  size_t backlen = gb->backlen;
 
-  // render the text in the gap buffer
-  // use currow and curcol to track position in buffer
+  // keep track of current row and col
+  char c;
   size_t currow = 1;
   size_t curcol = 0;
-  char c;
-
-  // first render the front of buffer
-  // TO-DO: coloff large, newline not rendering bug
-  for (size_t i = 0; i < gb->frontlen; i++) {
+  // render text in front of buffer
+  for (size_t i = 0; i < frontlen; i++) {
     if (currow >= E->rowoff + E->screenrows) break;
-    c = gb->front[i];
-    // write character if in range
-    if (currow >= E->rowoff 
+    c = front[i];
+    if (currow >= E->rowoff
       && currow < E->rowoff + E->screenrows
-      && curcol >= E->coloff 
+      && curcol >= E->coloff
       && curcol < E->coloff + E->screencols
-      ) {
-      write(STDIN_FILENO, gb->front + i, 1);
+    ) {
+      write(STDOUT_FILENO, &c, 1);
     }
-    // update currow and curcol
     if (c == '\n') {
-      if (currow >= E->rowoff 
+      if (currow >= E->rowoff
         && currow < E->rowoff + E->screenrows
         && curcol < E->coloff
-        ) {
-        write(STDIN_FILENO, "\n", 1);
+      ) {
+        write(STDOUT_FILENO, "\n", 1);
+      }
+      currow += 1;
+      curcol = 0;
+    }
+    else {
+      curcol += 1;
+    }
+  }
+  // render text in back of buffer
+  for (size_t j = 0; j < backlen; j++) {
+    if (currow >= E->rowoff + E->screenrows) break;
+    c = back[backlen - j - 1];
+    if (currow >= E->rowoff
+      && currow < E->rowoff + E->screenrows
+      && curcol >= E->coloff
+      && curcol < E->coloff + E->screencols
+    ) {
+      write(STDOUT_FILENO, &c, 1);
+    }
+    if (c == '\n') {
+      if (currow >= E->rowoff
+        && currow < E->rowoff + E->screenrows
+        && curcol < E->coloff
+      ) {
+        write(STDOUT_FILENO, "\n", 1);
       }
       currow += 1;
       curcol = 0;
@@ -137,39 +161,21 @@ void render(editor* E) {
     }
   }
 
-  // then render the back of buffer
-  for (size_t j = 0; j < gb->backlen; j++) {
-    if (currow >= E->rowoff + E->screenrows) break;
-    c = gb->back[gb->backlen-j-1];
-    if (currow >= E->rowoff 
-        && currow < E->rowoff + E->screenrows
-        && curcol >= E->coloff 
-        && curcol < E->coloff + E->screencols) {
-      write(STDIN_FILENO, gb->back + (gb->backlen-j-1), 1);
+  // if more rows empty after rendering, 
+  // draw tilde on each empty row
+  if (currow < E->rowoff + E->screenrows - 1) {
+    // if last char is not '\n', that is,
+    // if no empty line at the end of file
+    if (curcol != 0) {
+      write(STDOUT_FILENO, "\n", 1);
+      currow += 1;
     }
-    if (c == '\n') {
-      if (currow >= E->rowoff 
-        && currow < E->rowoff + E->screenrows
-        && curcol < E->coloff
-        ) {
-        write(STDIN_FILENO, "\n", 1);
+    while(currow < E->rowoff + E->screenrows) {
+      write(STDOUT_FILENO, "~", 1);
+      if (currow != E->rowoff + E->screenrows - 1) {
+        write(STDOUT_FILENO, "\n", 1);
       }
       currow += 1;
-      curcol = 0;
-    }
-    else {
-      curcol += 1;
-    }
-  }
-  // TO-DO draw tilde count bug
-  // if there is empty line, draw tilde
-  if (E->numrows < E->rowoff + E->screenrows) {
-    write(STDOUT_FILENO, "\n", 1);
-  }
-  for (size_t i = E->numrows; i < E->rowoff + E->screenrows; i++) {
-    write(STDOUT_FILENO, "~", 1);
-    if (i < E->rowoff + E->screenrows - 1) {
-      write(STDOUT_FILENO, "\n", 1);
     }
   }
 }
