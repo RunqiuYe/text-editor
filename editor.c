@@ -1,11 +1,29 @@
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
+#include <unistd.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <termios.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <errno.h>
 #include "lib/contracts.h"
 #include "lib/xalloc.h"
 #include "gapbuf.h"
 #include "editor.h"
+
+void die(editor* E, const char* s) {
+  write(STDOUT_FILENO, "\x1b[2J", 4);
+  write(STDOUT_FILENO, "\x1b[H", 3);
+  editor_free(E);
+  perror(s);
+  exit(1);
+}
 
 bool is_editor(editor* E) {
   if (E == NULL) return false;
@@ -94,6 +112,22 @@ void editor_delete(editor* E) {
   else {
     E->col -= 1;
   }
+  ENSURES(is_editor(E));
+}
+
+void editor_open(editor* E, char* filename) {
+  REQUIRES(is_editor(E) && filename != NULL);
+
+  FILE* fp = fopen(filename, "r");
+  if (fp == NULL) {
+    die(E, "fopen");
+  }
+  char c;
+  while((c = fgetc(fp)) != EOF) {
+    editor_insert(E, c);
+  }
+  fclose(fp);
+
   ENSURES(is_editor(E));
 }
 

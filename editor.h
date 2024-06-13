@@ -22,17 +22,23 @@ struct editor_header {
 };
 typedef struct editor_header editor;
 
-bool is_editor(editor* E);              // representation invariant
+void die(editor* E, const char* s);
 
-editor* editor_new(void); 	            // create a new and empty editor
+bool is_editor(editor* E);                    // representation invariant
 
-/* Editor and gap buffer */
+editor* editor_new(void); 	                  // create a new and empty editor
 
-void editor_forward(editor* E); 	      // move the cursor forward, to the right
-void editor_backward(editor* E); 	      // move the cursor backward, to the left
-void editor_insert(editor* E, char c); 	// insert c to the cursor’s left
-void editor_delete(editor* E); 	        // remove the node to the cursor’s left
+/* Editor and operation */
 
-void editor_free(editor* E);            // free allocated space for editor
+void editor_forward(editor* E);               // move the cursor forward, to the right
+void editor_backward(editor* E);              // move the cursor backward, to the left
+void editor_insert(editor* E, char c);        // insert c to the cursor’s left
+void editor_delete(editor* E);                // remove the node to the cursor’s left
+
+/* file i/o */
+
+void editor_open(editor* E, char* filename);  // open file and write content into editor
+
+void editor_free(editor* E);                  // free allocated space for editor
 
 #endif
