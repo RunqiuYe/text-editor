@@ -162,8 +162,8 @@ int readKey(editor* E) {
   }
 
   if (c == '\x1b') {
-    // If start with <esc>, read more chars for arrows keys
-    // and page up/down keys
+    // If start with <esc>, read more chars
+    // for arrows keys and page up/down keys
     char seq[3];
     if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
     if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
@@ -210,6 +210,10 @@ int readKey(editor* E) {
     }
     return '\x1b';
   } 
+  else if (c == 13) {
+    // enter key, return new line character
+    return '\n';
+  }
   else {
     return c;
   }
@@ -237,6 +241,10 @@ void processKey(editor* E, bool* go) {
     case DEL_KEY: {
       if (c == DEL_KEY) moveCursor(E, ARROW_RIGHT);
       editor_delete(E);
+      break;
+    }
+    default: {
+      editor_insert(E, c);
       break;
     }
   }
