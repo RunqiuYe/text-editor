@@ -89,7 +89,15 @@ void editor_backward(editor* E) {
 
 void editor_up(editor* E) {
   REQUIRES(is_editor(E));
-  if (E->row == 1) return;
+  
+  // if already at first line, move to left most
+  if (E->row == 1) {
+    while (!gapbuf_at_left(E->buffer)) {
+      editor_backward(E);
+    }
+    ENSURES(is_editor(E));
+    return;
+  }
 
   ASSERT(E->row > 1);
   size_t orig_row = E->row;
@@ -103,7 +111,15 @@ void editor_up(editor* E) {
 
 void editor_down(editor* E) {
   REQUIRES(is_editor(E));
-  if (E->row == E->numrows) return;
+
+  // if already at final line, move to rightmost
+  if (E->row == E->numrows) {
+    while(!gapbuf_at_right(E->buffer)) {
+      editor_forward(E);
+    }
+    ENSURES(is_editor(E));
+    return;
+  }
 
   ASSERT(E->row < E->numrows);
   size_t orig_row = E->row;
@@ -117,6 +133,7 @@ void editor_down(editor* E) {
         && E->buffer->back[E->buffer->backlen-1] != '\n') {
     editor_forward(E);
   }
+  
   ENSURES(is_editor(E));
 }
 
