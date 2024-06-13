@@ -15,10 +15,10 @@ struct editor_header {
   size_t numrows;
 
   struct termios orig_terminal;
-  size_t screenrows;
-  size_t screencols;
-  size_t rowoff;
-  size_t coloff;
+  size_t screenrows;    // total number of rows on screen
+  size_t screencols;    // total number of cols on screen
+  size_t rowoff;        // first visible row
+  size_t coloff;        // first visible col
 };
 typedef struct editor_header editor;
 

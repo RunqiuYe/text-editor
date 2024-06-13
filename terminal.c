@@ -95,32 +95,119 @@ void setWindowSize(editor* E) {
 }
 
 void render(editor* E) {
-  gapbuf* gb = E->buffer;
-  char* s = gapbuf_str(gb);
-  size_t len = gb->frontlen + gb->backlen;
-  write(STDOUT_FILENO, s, len);
-  free(s);
+  // rowoff = first visible row
+  // coloff = first visible col
+  // rowoff + screenrows = first invisible row
+  // coloff + screencols = first invisible col
 
-  write(STDOUT_FILENO, "\n", 1);
-  size_t i;
-  for (i = E->numrows; i < E->screenrows; i++) {
+  gapbuf* gb = E->buffer;
+
+  // render the text in the gap buffer
+  // use currow and curcol to track position in buffer
+  size_t currow = 1;
+  size_t curcol = 0;
+  char c;
+
+  // first render the front of buffer
+  // TO-DO: coloff large, newline not rendering bug
+  for (size_t i = 0; i < gb->frontlen; i++) {
+    if (currow >= E->rowoff + E->screenrows) break;
+    c = gb->front[i];
+    // write character if in range
+    if (currow >= E->rowoff 
+      && currow < E->rowoff + E->screenrows
+      && curcol >= E->coloff 
+      && curcol < E->coloff + E->screencols
+      ) {
+      write(STDIN_FILENO, gb->front + i, 1);
+    }
+    // update currow and curcol
+    if (c == '\n') {
+      if (currow >= E->rowoff 
+        && currow < E->rowoff + E->screenrows
+        && curcol < E->coloff
+        ) {
+        write(STDIN_FILENO, "\n", 1);
+      }
+      currow += 1;
+      curcol = 0;
+    }
+    else {
+      curcol += 1;
+    }
+  }
+
+  // then render the back of buffer
+  for (size_t j = 0; j < gb->backlen; j++) {
+    if (currow >= E->rowoff + E->screenrows) break;
+    c = gb->back[gb->backlen-j-1];
+    if (currow >= E->rowoff 
+        && currow < E->rowoff + E->screenrows
+        && curcol >= E->coloff 
+        && curcol < E->coloff + E->screencols) {
+      write(STDIN_FILENO, gb->back + (gb->backlen-j-1), 1);
+    }
+    if (c == '\n') {
+      if (currow >= E->rowoff 
+        && currow < E->rowoff + E->screenrows
+        && curcol < E->coloff
+        ) {
+        write(STDIN_FILENO, "\n", 1);
+      }
+      currow += 1;
+      curcol = 0;
+    }
+    else {
+      curcol += 1;
+    }
+  }
+  // TO-DO draw tilde count bug
+  // if there is empty line, draw tilde
+  if (E->numrows < E->rowoff + E->screenrows) {
+    write(STDOUT_FILENO, "\n", 1);
+  }
+  for (size_t i = E->numrows; i < E->rowoff + E->screenrows; i++) {
     write(STDOUT_FILENO, "~", 1);
-    if (i < E->screenrows - 1) {
+    if (i < E->rowoff + E->screenrows - 1) {
       write(STDOUT_FILENO, "\n", 1);
     }
-  } 
+  }
+}
+
+void scroll(editor* E) {
+  // rowoff = first visible row
+  // coloff = first visible col
+  // rowoff + screenrows = first invisible row
+  // coloff + screencols = first invisible col
+  if (E->row < E->rowoff) {
+    E->rowoff = E->row;
+  }
+  if (E->row >= E->rowoff + E->screenrows) {
+    E->rowoff = E->row - E->screenrows + 1;
+  }
+  if (E->col < E->coloff) {
+    E->coloff = E->col;
+  }
+  if (E->col >= E->coloff + E->screencols) {
+    E->coloff = E->col - E->screencols + 1;
+  }
 }
 
 void refreshScreen(editor* E) {
+  scroll(E);
+
   write(STDOUT_FILENO, "\x1b[?25l", 6);
   write(STDOUT_FILENO, "\x1b[2J", 4);
   write(STDOUT_FILENO, "\x1b[H", 3);
 
   render(E);
 
+  size_t cursorrow = E->row - E->rowoff + 1;
+  size_t cursorcol = E->col - E->coloff + 1;
+
   // Move cursor to correct position
   char buf[32];
-  snprintf(buf, sizeof(buf), "\x1b[%zu;%zuH", E->row, E->col+1);
+  snprintf(buf, sizeof(buf), "\x1b[%zu;%zuH", cursorrow, cursorcol);
   write(STDERR_FILENO, buf, strlen(buf));
 
   write(STDOUT_FILENO, "\x1b[?25h", 6);

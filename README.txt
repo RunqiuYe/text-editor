@@ -42,7 +42,7 @@ Using RYe's editor
 
 Compiling C code with contracts:
    % gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c terminal.c main.c
-   % ./a.out
+   % leaks --atExit -- ./a.out
 
 Compiling C code without contracts:
    % gcc -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c editor-test.c
