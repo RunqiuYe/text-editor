@@ -87,6 +87,40 @@ void editor_backward(editor* E) {
   ENSURES(is_editor(E));
 }
 
+void editor_up(editor* E) {
+  REQUIRES(is_editor(E));
+  if (E->row == 1) return;
+
+  ASSERT(E->row > 1);
+  size_t orig_row = E->row;
+  size_t orig_col = E->col;
+  while(E->row >= orig_row || E->col > orig_col) {
+    editor_backward(E);
+  }
+
+  ENSURES(is_editor(E));
+}
+
+void editor_down(editor* E) {
+  REQUIRES(is_editor(E));
+  if (E->row == E->numrows) return;
+
+  ASSERT(E->row < E->numrows);
+  size_t orig_row = E->row;
+  size_t orig_col = E->col;
+  while (E->row == orig_row) {
+    editor_forward(E);
+  }
+  char nextchar = E->buffer->back[E->buffer->backlen-1];
+  while (E->col < orig_col 
+        && (!gapbuf_at_right(E->buffer)) 
+        && nextchar != '\n') {
+    editor_forward(E);
+    nextchar = E->buffer->back[E->buffer->backlen-1];
+  }
+  ENSURES(is_editor(E));
+}
+
 void editor_insert(editor* E, char c) {
   REQUIRES(is_editor(E));
   gapbuf_insert(E->buffer, c);

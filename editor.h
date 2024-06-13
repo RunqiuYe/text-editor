@@ -28,10 +28,12 @@ bool is_editor(editor* E);                    // representation invariant
 
 editor* editor_new(void); 	                  // create a new and empty editor
 
-/* Editor and operation */
+/* Editor operations */
 
 void editor_forward(editor* E);               // move the cursor forward, to the right
 void editor_backward(editor* E);              // move the cursor backward, to the left
+void editor_up(editor* E);
+void editor_down(editor* E);
 void editor_insert(editor* E, char c);        // insert c to the cursor’s left
 void editor_delete(editor* E);                // remove the node to the cursor’s left
 

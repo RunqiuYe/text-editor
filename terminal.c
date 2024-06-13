@@ -144,11 +144,11 @@ void moveCursor(editor* E, int key) {
       break;
     }
     case ARROW_UP: {
-      /*TO DO*/
+      editor_up(E);
       break;
     }
     case ARROW_DOWN: {
-      /*TO DO*/
+      editor_down(E);
       break;
     }
   }
