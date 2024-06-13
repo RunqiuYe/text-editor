@@ -165,7 +165,8 @@ void render(editor* E) {
   // draw tilde on each empty row
   if (currow < E->rowoff + E->screenrows - 1) {
     // if last char is not '\n', that is,
-    // if no empty line at the end of file
+    // if no empty line at the end of file,
+    // go to empty line first
     if (curcol != 0) {
       write(STDOUT_FILENO, "\n", 1);
       currow += 1;
