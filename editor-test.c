@@ -159,7 +159,6 @@ int main(void) {
   assert(A->col == 5);
   assert(A->numrows == 3);
 
-
   editor_free(A);
 
   editor* B = editor_new();
