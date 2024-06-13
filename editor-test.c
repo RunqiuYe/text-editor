@@ -7,7 +7,7 @@
 #include "editor.h"
 
 int main(void) {
-  printf("Testing editor library...");
+  printf("Testing editor library...\n");
 
   editor* A = editor_new();
   assert(is_editor(A));
@@ -83,9 +83,111 @@ int main(void) {
   assert(A->col == 3);
   assert(A->numrows == 3);
 
+  for (size_t i = 0; i < 9; i++) {
+    editor_backward(A);
+  } // []apple\nPIEAPPLE\npie
+  assert(is_editor(A));
+  assert(A->row == 1);
+  assert(A->col == 0);
+  assert(A->numrows == 3);
+
+  editor_delete(A);
+  editor_delete(A);
+  assert(is_editor(A));
+  assert(A->row == 1);
+  assert(A->col == 0);
+  assert(A->numrows == 3);
+
+  // []apple
+  //   PIEAPPLE
+  //   pie
+
+  editor_down(A);
+  //   apple
+  // []PIEAPPLE
+  //   pie
+  assert(is_editor(A));
+  assert(A->row == 2);
+  assert(A->col == 0);
+  assert(A->numrows == 3);
+
+  editor_forward(A);
+  editor_forward(A);
+  editor_forward(A);
+  editor_forward(A);
+  editor_forward(A);
+  // apple
+  // PIEAP[]PLE
+  // pie
+  assert(is_editor(A));
+  assert(A->row == 2);
+  assert(A->col == 5);
+  assert(A->numrows == 3);
+  editor_up(A);
+  assert(is_editor(A));
+  assert(A->row == 1);
+  assert(A->col == 5);
+  assert(A->numrows == 3);
+  editor_up(A);
+  assert(is_editor(A));
+  assert(A->row == 1);
+  assert(A->col == 5);
+  assert(A->numrows == 3);
+  editor_down(A);
+  editor_down(A);
+  assert(is_editor(A));
+  assert(A->row == 3);
+  assert(A->col == 3);
+  assert(A->numrows == 3);
+
+  // apple
+  // PIEAPPLE
+  // pie[]
+
+  editor_up(A);
+  editor_forward(A);
+  editor_forward(A);
+  editor_forward(A);
+  editor_forward(A);
+  editor_forward(A);
+  assert(is_editor(A));
+  assert(A->row == 2);
+  assert(A->col == 8);
+  assert(A->numrows == 3);
+  editor_up(A);
+  assert(A->row == 1);
+  assert(A->col == 5);
+  assert(A->numrows == 3);
+
+
   editor_free(A);
 
-  printf("Passed all tests!");
+  editor* B = editor_new();
+  editor_insert(B, '\n');
+  editor_insert(B, '\n');
+  editor_insert(B, ' ');
+  editor_insert(B, 'h');
+  assert(is_editor(B));
+  assert(B->row == 3);
+  assert(B->col == 2);
+  assert(B->numrows == 3);
+  editor_up(B);
+  assert(is_editor(B));
+  assert(B->row == 2);
+  assert(B->col == 0);
+  assert(B->numrows == 3);
+  editor_up(B);
+  assert(is_editor(B));
+  assert(B->row == 1);
+  assert(B->col == 0);
+  editor_forward(B);
+  assert(is_editor(B));
+  assert(B->row == 2);
+  assert(B->col == 0);
+
+  editor_free(B);
+
+  printf("Passed all tests!\n");
 
   return 0;
 }

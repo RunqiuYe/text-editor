@@ -111,12 +111,11 @@ void editor_down(editor* E) {
   while (E->row == orig_row) {
     editor_forward(E);
   }
-  char nextchar = E->buffer->back[E->buffer->backlen-1];
+
   while (E->col < orig_col 
         && (!gapbuf_at_right(E->buffer)) 
-        && nextchar != '\n') {
+        && E->buffer->back[E->buffer->backlen-1] != '\n') {
     editor_forward(E);
-    nextchar = E->buffer->back[E->buffer->backlen-1];
   }
   ENSURES(is_editor(E));
 }
@@ -137,6 +136,9 @@ void editor_insert(editor* E, char c) {
 
 void editor_delete(editor* E) {
   REQUIRES(is_editor(E));
+  if (gapbuf_at_left(E->buffer)) return;
+
+  ASSERT(!gapbuf_at_left(E->buffer));
   char c = gapbuf_delete(E->buffer);
   if (c == '\n') {
     E->row -= 1;
