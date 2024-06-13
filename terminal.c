@@ -127,9 +127,9 @@ void refreshScreen(editor* E) {
 
   // Move cursor to correct position
   char buf[32];
-  snprintf(buf, sizeof(buf), "\x1b[%zu;%zuH", E->row, E->col + 1);
+  snprintf(buf, sizeof(buf), "\x1b[%zu;%zuH", E->row, E->col+1);
   write(STDERR_FILENO, buf, strlen(buf));
-  
+
   write(STDOUT_FILENO, "\x1b[?25h", 6);
 }
 
