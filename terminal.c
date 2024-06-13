@@ -28,23 +28,16 @@ enum key {
   PAGE_DOWN,
 };
 
-void die(const char* s) {
-  write(STDOUT_FILENO, "\x1b[2J", 4);
-  write(STDOUT_FILENO, "\x1b[H", 3);
-  perror(s);
-  exit(1);
-}
-
 void enableRawMode(editor* E) {
   // store original terminal in editor
   if (tcgetattr(STDIN_FILENO, &E->orig_terminal) == -1) {
-    die("tcgetattr");
+    die(E, "tcgetattr");
   }
 
   // setup new editor in raw mode
   struct termios raw;
   if (tcgetattr(STDIN_FILENO, &raw) == -1) {
-    die("tcgetattr");
+    die(E, "tcgetattr");
   }
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
   raw.c_cflag |= (CS8);
@@ -53,13 +46,13 @@ void enableRawMode(editor* E) {
   raw.c_cc[VTIME] = 1;
 
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
-    die("tcsetattr");
+    die(E, "tcsetattr");
   }
 }
 
 void disableRawMode(editor* E) {
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E->orig_terminal) == -1) {
-    die("tcsetattr");
+    die(E, "tcsetattr");
   }
 }
 
@@ -96,25 +89,48 @@ int getWindowSize(size_t* numrows, size_t* numcols) {
 
 void setWindowSize(editor* E) {
   if (getWindowSize(&E->screenrows, &E->screencols) == -1) {
-    die("getWindowSize");
+    die(E, "getWindowSize");
   }
 }
 
 void render(editor* E) {
-  for (size_t i = 0; i < E->screenrows; i++) {
+  gapbuf* gb = E->buffer;
+  char* s = gapbuf_str(gb);
+  size_t len = gb->frontlen + gb->backlen;
+  write(STDOUT_FILENO, s, len);
+  free(s);
+
+  // int* row = NULL;
+  // int* col = NULL;
+  // getCursorPosition(row, col);
+  // free(row);
+  // free(col);
+
+  write(STDOUT_FILENO, "\n", 1);
+  size_t i;
+  for (i = E->numrows; i < E->screenrows; i++) {
     write(STDOUT_FILENO, "~", 1);
     if (i < E->screenrows - 1) {
-      write(STDOUT_FILENO, "\n", 2);
+      write(STDOUT_FILENO, "\n", 1);
     }
   }
+
+  
 }
 
 void refreshScreen(editor* E) {
   write(STDOUT_FILENO, "\x1b[?25l", 6);
   write(STDOUT_FILENO, "\x1b[2J", 4);
   write(STDOUT_FILENO, "\x1b[H", 3);
-  write(STDOUT_FILENO, "\x1b[?25h", 6);
+
   render(E);
+
+  // Move cursor to correct position
+  char buf[32];
+  snprintf(buf, sizeof(buf), "\x1b[%zu;%zuH", E->row, E->col + 1);
+  write(STDERR_FILENO, buf, strlen(buf));
+  
+  write(STDOUT_FILENO, "\x1b[?25h", 6);
 }
 
 void moveCursor(editor* E, int key) {
@@ -138,11 +154,11 @@ void moveCursor(editor* E, int key) {
   }
 }
 
-int readKey(void) {
+int readKey(editor* E) {
   int nread;
   char c;
   while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
-    if (nread == -1 && errno != EAGAIN) die("read");
+    if (nread == -1 && errno != EAGAIN) die(E, "read");
   }
 
   if (c == '\x1b') {
@@ -200,7 +216,7 @@ int readKey(void) {
 }
 
 void processKey(editor* E, bool* go) {
-  int c = readKey();
+  int c = readKey(E);
 
   switch (c) {
     case CTRL_KEY('q'): {

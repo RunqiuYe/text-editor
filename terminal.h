@@ -9,8 +9,6 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-void die(const char* s);
-
 void enableRawMode(editor* E);
 void disableRawMode(editor* E);
 
@@ -19,9 +17,9 @@ int getCursorPosition(size_t* row, size_t* col);
 void setWindowSize(editor* E);
 
 void refreshScreen(editor* E);
-void render(editor* E);
+void render(editor *E);
 
-void moveCursor(editor* E, int key);
+void moveCursor(editor *E, int key);
 
-int readKey(void);
+int readKey(editor *E);
 void processKey(editor* E, bool* go);
