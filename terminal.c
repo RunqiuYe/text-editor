@@ -16,6 +16,7 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 enum key {
+  ENTER_KEY = 13,
   BACKSPACE = 127,
   ARROW_LEFT = 1000,
   ARROW_RIGHT,
@@ -210,10 +211,6 @@ int readKey(editor* E) {
     }
     return '\x1b';
   } 
-  else if (c == 13) {
-    // enter key, return new line character
-    return '\n';
-  }
   else {
     return c;
   }
@@ -241,6 +238,10 @@ void processKey(editor* E, bool* go) {
     case DEL_KEY: {
       if (c == DEL_KEY) moveCursor(E, ARROW_RIGHT);
       editor_delete(E);
+      break;
+    }
+    case ENTER_KEY: {
+      editor_insert(E, '\n');
       break;
     }
     default: {
