@@ -232,5 +232,12 @@ void processKey(editor* E, bool* go) {
       moveCursor(E, c);
       break;
     }
+    case BACKSPACE:
+    case CTRL_KEY('h'):
+    case DEL_KEY: {
+      if (c == DEL_KEY) moveCursor(E, ARROW_RIGHT);
+      editor_delete(E);
+      break;
+    }
   }
 }
