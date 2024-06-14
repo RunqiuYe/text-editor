@@ -17,6 +17,8 @@ int main(int argc, char* argv[]) {
     openFile(W, argv[1]);
   }
 
+  setMessage(W, "^Q — quit | ^S — save");
+
   bool* go = xcalloc(1, sizeof(bool));
   *go = true;
 

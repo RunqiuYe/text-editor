@@ -13,6 +13,8 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <time.h>
+#include <stdarg.h>
 #include "lib/contracts.h"
 #include "lib/xalloc.h"
 #include "gapbuf.h"
@@ -52,6 +54,9 @@ window* window_new(void) {
     die(W, "tcgetattr");
   }
   getWindowSize(W);
+
+  W->message[0] = '\0';
+  W->messageTime = 0;
 
   // status bar / ui offset
   W->screenrows -= 3;
@@ -216,6 +221,9 @@ void renderStatusBar(window* W) {
 }
 
 void renderText(window* W) {
+  /* TO-DO: rendering tabs */
+  /* TO-DO: tabs and cursors */
+
   // move cursor to second row
   char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%zu;1H", 1 + STATUS_BAR_OFFSET);
@@ -296,12 +304,31 @@ void renderText(window* W) {
   }
 }
 
+void renderMessageBar(window* W) {
+  // move cursor to last row
+  char buf[32];
+  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", W->screenrows + 3);
+  write(STDOUT_FILENO, buf, strlen(buf));
+
+  size_t msglen = strlen(W->message);
+  if (msglen > W->screencols) msglen = W->screencols;
+  if (msglen != 0 && time(NULL) - W->messageTime < 10) {
+    write(STDOUT_FILENO, W->message, msglen);
+  }
+}
+
+void setMessage(window* W, const char* fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  vsnprintf(W->message, sizeof(W->message), fmt, ap);
+  va_end(ap);
+  W->messageTime = time(NULL);
+}
+
 void render(window* W) {
-  /* TO-DO: status bar / UI */
-  /* TO-DO: rendering tabs */
-  /* TO-DO: tabs and cursors */
   renderStatusBar(W);
   renderText(W);
+  renderMessageBar(W);
 }
 
 int readKey(window* W) {
@@ -460,10 +487,19 @@ void saveFile(window* W) {
   size_t len = E->buffer->backlen + E->buffer->frontlen;
   char* s = gapbuf_str(E->buffer);
   int fd = open(E->filename, O_RDWR | O_CREAT, 0644);
-  ftruncate(fd, len);
-  write(fd, s, len);
-  close(fd);
+  if (fd != -1) {
+    if (ftruncate(fd, len) != -1) {
+      if (write(fd, s, len)) {
+        close(fd);
+        free(s);
+        setMessage(W, "%d bytes written to disk", len);
+        return;
+      }
+    }
+    close(fd);
+  }
   free(s);
+  setMessage(W, "Can't save! I/O error: %s", strerror(errno));
 }
 
 void window_free(window* W) {

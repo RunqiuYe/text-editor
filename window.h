@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <time.h>
+#include <stdarg.h>
 #include "gapbuf.h"
 #include "editor.h"
 
@@ -25,6 +27,8 @@ struct window_header {
   struct termios orig_terminal;
   size_t screenrows;                // total number of rows on screen
   size_t screencols;                // total number of cols on screen
+  char message[80];
+  time_t messageTime;
 };
 typedef struct window_header window;
 
@@ -43,6 +47,8 @@ void scroll(window* W);
 void refresh(window* W);                      // redraw everything
 void renderStatusBar(window* W);
 void renderText(window* W);
+void renderMessageBar(window* W);
+void setMessage(window* W, const char* fmt, ...);
 void render(window* W);
 
 int readKey(window* W);
