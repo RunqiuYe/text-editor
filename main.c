@@ -8,26 +8,26 @@
 #include "lib/xalloc.h"
 #include "gapbuf.h"
 #include "editor.h"
-#include "terminal.h"
+#include "window.h"
 
 int main(int argc, char* argv[]) {
-  editor* E = editor_new();
-  enableRawMode(E);
-  setWindowSize(E);
+  window* W = window_new();
+  enableRawMode(W);
+  getWindowSize(W);
   if (argc >= 2) {
-    editor_open(E, argv[1]);
+    openFile(W, argv[1]);
   }
 
   bool* go = xcalloc(1, sizeof(bool));
   *go = true;
 
   while (*go) {
-    refreshScreen(E);
-    processKey(E, go);
+    refresh(W);
+    processKey(W, go);
   }
 
-  disableRawMode(E);
-  editor_free(E);
+  disableRawMode(W);
+  window_free(W);
   free(go);
   printf("Thanks for using RYe's editor\n");
   return 0;
