@@ -43,6 +43,8 @@ void render(window* W);
 int readKey(window* W);
 void processKey(window* W, bool* go);
 
+void openFile(window* W, char* filename);
+
 void window_free(window* W);
 
 #endif

@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include "lib/contracts.h"
+#include "lib/xalloc.h"
 #include "gapbuf.h"
 #include "editor.h"
 #include "window.h"
@@ -36,6 +38,18 @@ void die(window* W, const char* s) {
   window_free(W);
   perror(s);
   exit(1);
+}
+
+window* window_new(void) {
+  window* W = xmalloc(sizeof(window));
+  W->E = editor_new();
+  W->screenrows = 0;
+  W->screencols = 0;
+  if (tcgetattr(STDIN_FILENO, &W->orig_terminal) == -1) {
+    die(W, "tcgetattr");
+  }
+  getWindowSize(W);
+  return W;
 }
 
 void enableRawMode(window* W) {
@@ -103,3 +117,269 @@ void getWindowSize(window* W) {
   }
 }
 
+void scroll(window* W) {
+  editor* E = W->E;
+
+  // rowoff = first visible row
+  // coloff = first visible col
+  // rowoff + screenrows = first invisible row
+  // coloff + screencols = first invisible col
+  if (E->row < E->rowoff) {
+    E->rowoff = E->row;
+  }
+  if (E->row >= E->rowoff + W->screenrows) {
+    E->rowoff = E->row - W->screenrows + 1;
+  }
+  if (E->col < E->coloff) {
+    E->coloff = E->col;
+  }
+  if (E->col >= E->coloff + W->screencols) {
+    E->coloff = E->col - W->screencols + 1;
+  }
+}
+
+void refresh(window* W) {
+  scroll(W);
+
+  write(STDOUT_FILENO, "\x1b[?25l", 6);
+  write(STDOUT_FILENO, "\x1b[2J", 4);
+  write(STDOUT_FILENO, "\x1b[H", 3);
+
+  render(W);
+
+  size_t cursorrow = W->E->row - W->E->rowoff + 1;
+  size_t cursorcol = W->E->col - W->E->coloff + 1;
+
+  // Move cursor to correct position
+  char buf[32];
+  snprintf(buf, sizeof(buf), "\x1b[%zu;%zuH", cursorrow, cursorcol);
+  write(STDERR_FILENO, buf, strlen(buf));
+
+  write(STDOUT_FILENO, "\x1b[?25h", 6);
+}
+
+void render(window* W) {
+  /* TO-DO: rendering tabs */
+  /* TO-DO: tabs and cursors */
+
+  // rowoff = first visible row
+  // coloff = first visible col
+  // rowoff + screenrows = first invisible row
+  // coloff + screencols = first invisible col
+
+  editor* E = W->E;
+  gapbuf* gb = E->buffer;
+  char* front = gb->front;
+  char* back = gb->back;
+  size_t frontlen = gb->frontlen;
+  size_t backlen = gb->backlen;
+
+  // keep track of current row and col
+  char c;
+  size_t currow = 1;
+  size_t curcol = 0;
+  // render text in front of buffer
+  for (size_t i = 0; i < frontlen; i++) {
+    if (currow >= E->rowoff + W->screenrows) break;
+    c = front[i];
+    if (currow >= E->rowoff
+      && currow < E->rowoff + W->screenrows
+      && curcol >= E->coloff
+      && curcol < E->coloff + W->screencols
+    ) {
+      write(STDOUT_FILENO, &c, 1);
+    }
+    if (c == '\n') {
+      if (currow >= E->rowoff
+        && currow < E->rowoff + W->screenrows
+        && curcol < E->coloff
+      ) {
+        write(STDOUT_FILENO, "\n", 1);
+      }
+      currow += 1;
+      curcol = 0;
+    }
+    else {
+      curcol += 1;
+    }
+  }
+  // render text in back of buffer
+  for (size_t j = 0; j < backlen; j++) {
+    if (currow >= E->rowoff + W->screenrows) break;
+    c = back[backlen - j - 1];
+    if (currow >= E->rowoff
+      && currow < E->rowoff + W->screenrows
+      && curcol >= E->coloff
+      && curcol < E->coloff + W->screencols
+    ) {
+      write(STDOUT_FILENO, &c, 1);
+    }
+    if (c == '\n') {
+      if (currow >= E->rowoff
+        && currow < E->rowoff + W->screenrows
+        && curcol < E->coloff
+      ) {
+        write(STDOUT_FILENO, "\n", 1);
+      }
+      currow += 1;
+      curcol = 0;
+    }
+    else {
+      curcol += 1;
+    }
+  }
+  // if more rows empty after rendering, 
+  // draw tilde on each empty row
+  while (currow + 1 < E->rowoff + W->screenrows) {
+    write(STDOUT_FILENO, "\n", 1);
+    write(STDOUT_FILENO, "~", 1);
+    currow += 1;
+  }
+}
+
+int readKey(window* W) {
+  int nread;
+  char c;
+  while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
+    if (nread == -1 && errno != EAGAIN) die(W, "read");
+  }
+
+  if (c == '\x1b') {
+    // If start with <esc>, read more chars
+    // for arrows keys and page up/down keys
+    char seq[3];
+    if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
+    if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
+
+    if (seq[0] == '[') {
+      // Page Up and Page Down Key
+      // Page Up <esc>[5~
+      // Page Up <esc>[6~
+      if (seq[1] >= '0' && seq[1] <= '9') {
+        if (read(STDIN_FILENO, &seq[2], 1) != 1) return '\x1b';
+        if (seq[2] == '~') {
+          switch (seq[1]) {
+            case '1': return HOME_KEY;
+            case '3': return DEL_KEY;
+            case '4': return END_KEY;
+            case '5': return PAGE_UP;
+            case '6': return PAGE_DOWN;
+            case '7': return HOME_KEY;
+            case '8': return END_KEY;
+          }
+        }
+      }
+      else {
+        // Arrow Keys
+        // Up <esc>[A
+        // Down <esc>[B
+        // Right <esc>[C
+        // Left <esc>[D
+        switch (seq[1]) {
+          case 'A': return ARROW_UP;
+          case 'B': return ARROW_DOWN;
+          case 'C': return ARROW_RIGHT;
+          case 'D': return ARROW_LEFT;
+          case 'H': return HOME_KEY;
+          case 'F': return END_KEY;
+        }
+      }
+    }
+    else if (seq[0] == 'O') {
+      switch (seq[1]) {
+        case 'H': return HOME_KEY;
+        case 'F': return END_KEY;
+      }
+    }
+    return '\x1b';
+  } 
+  else {
+    return c;
+  }
+}
+
+void moveCursor(window* W, int key) {
+  editor* E = W->E;
+  switch (key) {
+    case ARROW_LEFT: {
+      editor_backward(E);
+      break;
+    }
+    case ARROW_RIGHT: {
+      editor_forward(E);
+      break;
+    }
+    case ARROW_UP: {
+      editor_up(E);
+      break;
+    }
+    case ARROW_DOWN: {
+      editor_down(E);
+      break;
+    }
+  }
+}
+
+void processKey(window* W, bool* go) {
+  editor* E = W->E;
+  int c = readKey(W);
+
+  switch (c) {
+    case CTRL_KEY('q'): {
+      *go = false;
+      write(STDOUT_FILENO, "\x1b[2J", 4);
+      write(STDOUT_FILENO, "\x1b[H", 3);
+      break;
+    }
+    case ARROW_UP:
+    case ARROW_DOWN:
+    case ARROW_LEFT:
+    case ARROW_RIGHT: {
+      moveCursor(W, c);
+      break;
+    }
+    case BACKSPACE:
+    case CTRL_KEY('h'):
+    case DEL_KEY: {
+      if (c == DEL_KEY) moveCursor(W, ARROW_RIGHT);
+      editor_delete(E);
+      break;
+    }
+    case ENTER_KEY: {
+      editor_insert(E, '\n');
+      break;
+    }
+    default: {
+      editor_insert(E, c);
+      break;
+    }
+  }
+}
+
+void openFile(window* W, char* filename) {
+  editor* E = W->E;
+
+  // get all text in file into buffer
+  FILE* fp = fopen(filename, "r");
+  if (fp == NULL) {
+    die(W, "fopen");
+  }
+
+  char c;
+  size_t count = 0;
+  while((c = fgetc(fp)) != EOF) {
+    count += 1;
+    editor_insert(E, c);
+  }
+  fclose(fp);
+
+  // move cursor to start of file
+  for (size_t i = 0; i < count; i++) {
+    editor_backward(E);
+  }
+}
+
+void window_free(window* W) {
+  editor_free(W->E);
+  free(W);
+}
