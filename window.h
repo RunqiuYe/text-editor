@@ -34,9 +34,24 @@ window* window_new(void);                     // create new window
 
 void enableRawMode(window* W);                // enable raw mode
 void disableRawMode(window* W);               // disable raw mode
+
+int getCursorPosition(size_t* row, size_t* col);
+int getScreenSize(size_t* numrows, size_t* numcols);
+void getWindowSize(window* W);
+
+void scroll(window* W);
 void refresh(window* W);                      // redraw everything
+void renderStatusBar(window* W);
+void renderText(window* W);
+void render(window* W);
+
+int readKey(window* W);
+void moveCursor(window* W, int key);
 void processKey(window* W, bool* go);         // process key press
+
 void openFile(window* W, char* filename);     // open text file
+void saveFile(window* W, char* filename);
+
 void window_free(window* W);                  // free
 
 #endif

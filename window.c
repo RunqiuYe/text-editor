@@ -18,6 +18,8 @@
 #include "editor.h"
 #include "window.h"
 
+#define STATUS_BAR_OFFSET ((size_t)1)
+
 enum key {
   ENTER_KEY = 13,
   BACKSPACE = 127,
@@ -49,6 +51,10 @@ window* window_new(void) {
     die(W, "tcgetattr");
   }
   getWindowSize(W);
+
+  // status bar / ui offset
+  W->screenrows -= 3;
+
   return W;
 }
 
@@ -149,25 +155,70 @@ void refresh(window* W) {
 
   render(W);
 
-  size_t cursorrow = E->row - E->rowoff + 1;
+  size_t cursorrow = E->row - E->rowoff + 1 + STATUS_BAR_OFFSET;
   size_t cursorcol = E->col - E->coloff + 1;
 
   // Move cursor to correct position
   char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%zu;%zuH", cursorrow, cursorcol);
-  write(STDERR_FILENO, buf, strlen(buf));
+  write(STDOUT_FILENO, buf, strlen(buf));
 
   write(STDOUT_FILENO, "\x1b[?25h", 6);
 }
 
-void render(window* W) {
-  /* TO-DO: rendering tabs */
-  /* TO-DO: tabs and cursors */
+void renderStatusBar(window* W) {
+  editor* E = W->editor;
 
-  // rowoff = first visible row
-  // coloff = first visible col
-  // rowoff + screenrows = first invisible row
-  // coloff + screencols = first invisible col
+  // move cursor to first row
+  char buf[32];
+  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", STATUS_BAR_OFFSET);
+  write(STDOUT_FILENO, buf, strlen(buf));
+
+  // first row to display file names
+  char filenames[80];
+  size_t len;
+  len = snprintf(filenames, sizeof(filenames), "%.20s ",
+                E->filename != NULL ? E->filename: "[No Name]");
+  if (len > W->screencols) len = W->screencols;
+  write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
+  write(STDOUT_FILENO, "\x1b[;96m", 6);
+  write(STDOUT_FILENO, filenames, len);
+  write(STDOUT_FILENO, "\x1b[m", 3); // reset color
+  write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
+  while (len < W->screencols) {
+    write(STDOUT_FILENO, " ", 1);
+    len += 1;
+  }
+
+  // move cursor to second last row
+  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", W->screenrows + 2);
+  write(STDOUT_FILENO, buf, strlen(buf));
+
+  // second last row to display file status
+  char status[80], rstatus[80];
+  size_t rlen;
+  len = snprintf(status, sizeof(status), 
+                "%.20s - %zu lines",
+                E->filename != NULL ? E->filename: "[No Name]",
+                E->numrows);
+  rlen = snprintf(rstatus, sizeof(rstatus),
+                  "%zu/%zu", E->row, E->numrows);
+  if (len > W->screenrows) len = W->screenrows;
+  write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
+  write(STDOUT_FILENO, status, len);
+  while (len < W->screencols - rlen) {
+    write(STDOUT_FILENO, " ", 1);
+    len += 1;
+  }
+  write(STDOUT_FILENO, rstatus, rlen);
+  write(STDOUT_FILENO, "\x1b[m", 3); // reverse color
+}
+
+void renderText(window* W) {
+  // move cursor to second row
+  char buf[32];
+  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", 1 + STATUS_BAR_OFFSET);
+  write(STDOUT_FILENO, buf, strlen(buf));
 
   editor* E = W->editor;
   gapbuf* gb = E->buffer;
@@ -175,6 +226,11 @@ void render(window* W) {
   char* back = gb->back;
   size_t frontlen = gb->frontlen;
   size_t backlen = gb->backlen;
+
+  // rowoff = first visible row
+  // coloff = first visible col
+  // rowoff + screenrows = first invisible row
+  // coloff + screencols = first invisible col
 
   // keep track of current row and col
   char c;
@@ -237,6 +293,14 @@ void render(window* W) {
     write(STDOUT_FILENO, "~", 1);
     currow += 1;
   }
+}
+
+void render(window* W) {
+  /* TO-DO: status bar / UI */
+  /* TO-DO: rendering tabs */
+  /* TO-DO: tabs and cursors */
+  renderStatusBar(W);
+  renderText(W);
 }
 
 int readKey(window* W) {
@@ -366,6 +430,8 @@ void openFile(window* W, char* filename) {
   if (fp == NULL) {
     die(W, "fopen");
   }
+  
+  E->filename = filename;
 
   char c;
   size_t count = 0;
