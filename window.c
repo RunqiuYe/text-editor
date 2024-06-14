@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <fcntl.h>
 #include "lib/contracts.h"
 #include "lib/xalloc.h"
 #include "gapbuf.h"
@@ -397,6 +398,10 @@ void processKey(window* W, bool* go) {
       write(STDOUT_FILENO, "\x1b[H", 3);
       break;
     }
+    case CTRL_KEY('s'): {
+      saveFile(W);
+      break;
+    }
     case ARROW_UP:
     case ARROW_DOWN:
     case ARROW_LEFT:
@@ -445,6 +450,20 @@ void openFile(window* W, char* filename) {
   for (size_t i = 0; i < count; i++) {
     editor_backward(E);
   }
+}
+
+void saveFile(window* W) {
+  editor* E = W->editor;
+  if (E->filename == NULL) {
+    return;
+  }
+  size_t len = E->buffer->backlen + E->buffer->frontlen;
+  char* s = gapbuf_str(E->buffer);
+  int fd = open(E->filename, O_RDWR | O_CREAT, 0644);
+  ftruncate(fd, len);
+  write(fd, s, len);
+  close(fd);
+  free(s);
 }
 
 void window_free(window* W) {

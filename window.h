@@ -50,7 +50,7 @@ void moveCursor(window* W, int key);
 void processKey(window* W, bool* go);         // process key press
 
 void openFile(window* W, char* filename);     // open text file
-void saveFile(window* W, char* filename);
+void saveFile(window* W);
 
 void window_free(window* W);                  // free
 
