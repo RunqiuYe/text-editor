@@ -5,12 +5,12 @@ Text Editor in C
 Kilo editor
 
 Compiling kilo text editor:
-  % gcc -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic test.c
-  % ./a.out
+  % make kilo
+  % ./kilo <optional file name>
 
 Compiling escape sequence printing:
-  % gcc -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic escape.c
-  % ./a.out
+  % make escape
+  % ./escape
 
 ===============================================================================
 
@@ -45,9 +45,9 @@ Compiling C code with contracts:
    % leaks --atExit -- ./rye
 
 Compiling C code without contracts:
-   % make
+   % make rye
    % ./rye <optional file name>
 
 Checking for memory leaks:
-   % make
+   % make rye
    % leaks --atExit -- ./rye
