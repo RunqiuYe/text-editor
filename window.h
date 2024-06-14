@@ -28,23 +28,15 @@ struct window_header {
 };
 typedef struct window_header window;
 
-void die(window* W, const char* s);
+void die(window* W, const char* s);           // debugging and display error
 
-window* window_new(void);
+window* window_new(void);                     // create new window
 
-void enableRawMode(window* W);
-void disableRawMode(window* W);
-void getWindowSize(window* W);
-
-void scroll(window* W);
-void refresh(window* W);
-void render(window* W);
-
-int readKey(window* W);
-void processKey(window* W, bool* go);
-
-void openFile(window* W, char* filename);
-
-void window_free(window* W);
+void enableRawMode(window* W);                // enable raw mode
+void disableRawMode(window* W);               // disable raw mode
+void refresh(window* W);                      // redraw everything
+void processKey(window* W, bool* go);         // process key press
+void openFile(window* W, char* filename);     // open text file
+void window_free(window* W);                  // free
 
 #endif
