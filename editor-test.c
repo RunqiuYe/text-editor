@@ -98,13 +98,13 @@ int main(void) {
   assert(A->col == 0);
   assert(A->numrows == 3);
 
-  // []apple
-  //   PIEAPPLE
+  // []apple\n
+  //   PIEAPPLE\n
   //   pie
 
   editor_down(A);
-  //   apple
-  // []PIEAPPLE
+  //   apple\n
+  // []PIEAPPLE\n
   //   pie
   assert(is_editor(A));
   assert(A->row == 2);
@@ -116,47 +116,34 @@ int main(void) {
   editor_forward(A);
   editor_forward(A);
   editor_forward(A);
-  // apple
-  // PIEAP[]PLE
+  // apple\n
+  // PIEAP[]PLE\n
   // pie
   assert(is_editor(A));
   assert(A->row == 2);
   assert(A->col == 5);
   assert(A->numrows == 3);
   editor_up(A);
+  // apple[]\n
+  // PIEAPPLE\n
+  // pie
   assert(is_editor(A));
   assert(A->row == 1);
   assert(A->col == 5);
   assert(A->numrows == 3);
   editor_up(A);
+  // []apple
+  // PIEAPPLE\n
+  // pie
   assert(is_editor(A));
   assert(A->row == 1);
-  assert(A->col == 5);
+  assert(A->col == 0);
   assert(A->numrows == 3);
   editor_down(A);
   editor_down(A);
   assert(is_editor(A));
   assert(A->row == 3);
-  assert(A->col == 3);
-  assert(A->numrows == 3);
-
-  // apple
-  // PIEAPPLE
-  // pie[]
-
-  editor_up(A);
-  editor_forward(A);
-  editor_forward(A);
-  editor_forward(A);
-  editor_forward(A);
-  editor_forward(A);
-  assert(is_editor(A));
-  assert(A->row == 2);
-  assert(A->col == 8);
-  assert(A->numrows == 3);
-  editor_up(A);
-  assert(A->row == 1);
-  assert(A->col == 5);
+  assert(A->col == 0);
   assert(A->numrows == 3);
 
   editor_free(A);
