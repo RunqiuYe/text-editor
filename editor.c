@@ -38,6 +38,8 @@ editor* editor_new(void) {
   E->rowoff = 1; // first visible row is 1
   E->coloff = 0; // first visible col is 0
 
+  E->filename = NULL;
+
   ENSURES(is_editor(E));
   return E;
 }

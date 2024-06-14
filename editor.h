@@ -16,6 +16,9 @@ struct editor_header {
 
   size_t rowoff;        // first visible row
   size_t coloff;        // first visible col
+
+  char* filename;       // name of file
+
 };
 typedef struct editor_header editor;
 
