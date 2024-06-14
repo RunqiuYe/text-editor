@@ -41,9 +41,13 @@ Compiling C code without contracts:
 Using RYe's editor
 
 Compiling C code with contracts:
-   % gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c terminal.c main.c
-   % leaks --atExit -- ./a.out
+   % gcc -o rye -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c window.c main.c
+   % leaks --atExit -- ./rye
 
 Compiling C code without contracts:
-   % gcc -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c editor-test.c
-   % leaks --atExit -- ./a.out
+   % make
+   % ./rye <optional file name>
+
+Checking for memory leaks:
+   % make
+   % leaks --atExit -- ./rye
