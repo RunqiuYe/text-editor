@@ -177,18 +177,18 @@ void renderStatusBar(window* W) {
   // first row to display file names
   char filenames[80];
   size_t len;
-  len = snprintf(filenames, sizeof(filenames), "%.20s ",
-                E->filename != NULL ? E->filename: "[No Name]");
+  len = snprintf(filenames, sizeof(filenames), " %.20s ",
+                E->filename != NULL ? E->filename: " [No Name] ");
   if (len > W->screencols) len = W->screencols;
   write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
-  write(STDOUT_FILENO, "\x1b[;96m", 6);
   write(STDOUT_FILENO, filenames, len);
   write(STDOUT_FILENO, "\x1b[m", 3); // reset color
-  write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
+  write(STDOUT_FILENO, "\x1b[;100m", 7);
   while (len < W->screencols) {
     write(STDOUT_FILENO, " ", 1);
     len += 1;
   }
+  write(STDOUT_FILENO, "\x1b[m", 3); // reset color
 
   // move cursor to second last row
   snprintf(buf, sizeof(buf), "\x1b[%zu;1H", W->screenrows + 2);
@@ -202,7 +202,7 @@ void renderStatusBar(window* W) {
                 E->filename != NULL ? E->filename: "[No Name]",
                 E->numrows);
   rlen = snprintf(rstatus, sizeof(rstatus),
-                  "%zu/%zu", E->row, E->numrows);
+                  "(%zu,%zu)", E->row, E->col);
   if (len > W->screenrows) len = W->screenrows;
   write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
   write(STDOUT_FILENO, status, len);
