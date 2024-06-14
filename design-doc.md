@@ -90,9 +90,11 @@ void gapbuf_print(gapbuf* gb);              // print the content of gapbuf for d
 
 ```
 
-## Editor and gap buffer
+## Editor
 
-We want to use the gap buffer to hold the text in the editor. Since we want to show the current location of cursor on the screen, we need to include the row and the column of the cursor in the text, together with the number of rows. Hence we define the editor struct as the following for now.
+For each text file, we want to use an editor to modify the file. 
+
+We want to use the gap buffer to hold the text in the editor. Since we want to show the current location of cursor on the screen, we need to include the row and the column of the cursor in the text, together with the total number of rows. Hence we define the editor struct as the following for now.
 
 ```c
 struct editor_header {
@@ -135,7 +137,77 @@ Note that the user will interact with the editor directly. Therefore, when the c
 
 Now we finish the part where the editor interacts with the buffer (text). Next we want to add how the editor interacts with our terminal, since that's where the text editor is going to be.
 
-## Editor and terminal
+## Window
+
+We use a new structure `window` to directly interacts with terminal and display our file. This will make things easier when we allow the text editor to open multiple buffers at a time. In that case, we only have one window, but we can have multiple editor, one for each file.
+
+The `window` struct must hold an editor to know which file it is displaying. Hence, it must have an editor field. In addition, we store the original terminal in the struct, together with total number of rows and columns on the screen.
+
+```c
+struct window_header {
+  editor* editor;
+  struct termios orig_terminal;
+  size_t screenrows;                // total number of rows on screen
+  size_t screencols;                // total number of cols on screen
+};
+typedef struct window_header window;
+```
+
+We also update the `editor` interface. We add two fields `rowoff` and `coloff` with type `size_t`. This will allow us to render the text more easily and eventually scroll with our arrow keys. Now the `editor` type looks like this.
+
+```c
+struct editor_header {
+  gapbuf* buffer;
+  size_t row;
+  size_t col;
+  size_t numrows;
+
+  size_t rowoff;        // first visible row
+  size_t coloff;        // first visible col
+};
+typedef struct editor_header editor;
+```
+
+The `window` library contains these functions. This will allow us to initialize the window, enable raw mode, display everything, process key press, and open text files.
+
+```c
+void die(window* W, const char* s);           // debugging and display error
+
+window* window_new(void);                     // create new window
+
+void enableRawMode(window* W);                // enable raw mode
+void disableRawMode(window* W);               // disable raw mode
+void refresh(window* W);                      // redraw everything
+void processKey(window* W, bool* go);         // process key press
+void openFile(window* W, char* filename);     // open text file
+void window_free(window* W);                  // free
+```
+
+Accordingly, we have a rough model of our `main` functino in `main.c`.
+
+```c
+int main(int argc, char* argv[]) {
+  window* W = window_new();
+  enableRawMode(W);
+  if (argc >= 2) {
+    openFile(W, argv[1]);
+  }
+
+  bool* go = xcalloc(1, sizeof(bool));
+  *go = true;
+
+  while (*go) {
+    refresh(W);
+    processKey(W, go);
+  }
+
+  disableRawMode(W);
+  window_free(W);
+  free(go);
+  printf("Thanks for using RYe's editor\n");
+  return 0;
+}
+```
 
 
 
