@@ -23,6 +23,10 @@
 
 #define STATUS_BAR_OFFSET ((size_t)1)
 
+/* TO-DO: renderText function, render tabs */
+/* TO-DO: relevant tabs and cursor interaction */
+/* TO-DO: prompt */
+
 enum key {
   ENTER_KEY = 13,
   BACKSPACE = 127,
@@ -209,7 +213,7 @@ void renderStatusBar(window* W) {
                 E->numrows,
                 E->dirty != 0 ? "(modified)" : "");
   rlen = snprintf(rstatus, sizeof(rstatus),
-                  "(%zu,%zu)", E->row, E->col);
+                  "Position (%zu,%zu)", E->row, E->col);
   if (len > W->screencols) len = W->screencols;
   write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
   write(STDOUT_FILENO, status, len);
@@ -218,7 +222,7 @@ void renderStatusBar(window* W) {
     len += 1;
   }
   write(STDOUT_FILENO, rstatus, rlen);
-  write(STDOUT_FILENO, "\x1b[m", 3); // reverse color
+  write(STDOUT_FILENO, "\x1b[m", 3); // reset color
 }
 
 void renderText(window* W) {

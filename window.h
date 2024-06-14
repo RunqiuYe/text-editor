@@ -32,32 +32,32 @@ struct window_header {
 };
 typedef struct window_header window;
 
-void die(window* W, const char* s);           // debugging and display error
+void die(window* W, const char* s);               // debugging and display error
 
-window* window_new(void);                     // create new window
+window* window_new(void);                         // create new window
 
-void enableRawMode(window* W);                // enable raw mode
-void disableRawMode(window* W);               // disable raw mode
+void enableRawMode(window* W);                    // enable raw mode
+void disableRawMode(window* W);                   // disable raw mode
 
 int getCursorPosition(size_t* row, size_t* col);
 int getScreenSize(size_t* numrows, size_t* numcols);
 void getWindowSize(window* W);
 
-void scroll(window* W);
-void refresh(window* W);                      // redraw everything
-void renderStatusBar(window* W);
-void renderText(window* W);
-void renderMessageBar(window* W);
-void setMessage(window* W, const char* fmt, ...);
+void scroll(window* W);                           // adjust offset to scroll
+void refresh(window* W);                          // redraw everything
+void renderStatusBar(window* W);                  // draw status bar
+void renderText(window* W);                       // render text file
+void renderMessageBar(window* W);                 // render message bar
+void setMessage(window* W, const char* fmt, ...); // set message bar message
 void render(window* W);
 
-int readKey(window* W);
-void moveCursor(window* W, int key);
-void processKey(window* W, bool* go);         // process key press
+int readKey(window* W);                           // read key presses
+void moveCursor(window* W, int key);              // move cursor
+void processKey(window* W, bool* go);             // process key press
 
-void openFile(window* W, char* filename);     // open text file
-void saveFile(window* W);
+void openFile(window* W, char* filename);         // open text file
+void saveFile(window* W);                         // save edited file
 
-void window_free(window* W);                  // free
+void window_free(window* W);                      // free
 
 #endif
