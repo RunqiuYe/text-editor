@@ -99,6 +99,10 @@ void setWindowSize(editor* E) {
 }
 
 void render(editor* E) {
+
+  /* TO-DO: rendering tabs */
+  /* TO-DO: tabs and cursors */
+
   // rowoff = first visible row
   // coloff = first visible col
   // rowoff + screenrows = first invisible row

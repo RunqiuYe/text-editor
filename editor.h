@@ -28,7 +28,7 @@ bool is_editor(editor* E);                    // representation invariant
 
 editor* editor_new(void); 	                  // create a new and empty editor
 
-/* Editor operations */
+/* editor operations */
 
 void editor_forward(editor* E);               // move the cursor forward, to the right
 void editor_backward(editor* E);              // move the cursor backward, to the left
@@ -40,6 +40,8 @@ void editor_delete(editor* E);                // remove the node to the cursorâ€
 /* file i/o */
 
 void editor_open(editor* E, char* filename);  // open file and write content into editor
+
+/* free */
 
 void editor_free(editor* E);                  // free allocated space for editor
 

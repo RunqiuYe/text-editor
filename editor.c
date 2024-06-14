@@ -51,6 +51,8 @@ editor* editor_new(void) {
   return E;
 }
 
+/* editor operations */
+
 void editor_forward(editor* E) {
   REQUIRES(is_editor(E));
   if (gapbuf_at_right(E->buffer)) return;
@@ -133,7 +135,7 @@ void editor_down(editor* E) {
         && E->buffer->back[E->buffer->backlen-1] != '\n') {
     editor_forward(E);
   }
-  
+
   ENSURES(is_editor(E));
 }
 
@@ -168,6 +170,8 @@ void editor_delete(editor* E) {
   ENSURES(is_editor(E));
 }
 
+/* file i/o */
+
 void editor_open(editor* E, char* filename) {
   REQUIRES(is_editor(E) && filename != NULL);
 
@@ -192,6 +196,8 @@ void editor_open(editor* E, char* filename) {
 
   ENSURES(is_editor(E));
 }
+
+/* free */
 
 void editor_free(editor* E) {
   REQUIRES(is_editor(E));
