@@ -1,3 +1,7 @@
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -41,6 +45,7 @@ void enableRawMode(editor* E) {
     die(E, "tcgetattr");
   }
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+  raw.c_oflag &= ~(OPOST);
   raw.c_cflag |= (CS8);
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
   raw.c_cc[VMIN] = 0;
@@ -119,6 +124,7 @@ void render(editor* E) {
       && curcol >= E->coloff
       && curcol < E->coloff + E->screencols
     ) {
+      if (c == '\n') write(STDOUT_FILENO, "\r", 1);
       write(STDOUT_FILENO, &c, 1);
     }
     if (c == '\n') {
@@ -126,7 +132,8 @@ void render(editor* E) {
         && currow < E->rowoff + E->screenrows
         && curcol < E->coloff
       ) {
-        write(STDOUT_FILENO, "\n", 1);
+        write(STDOUT_FILENO, "\x1b[K", 3);
+        write(STDOUT_FILENO, "\r\n", 2);
       }
       currow += 1;
       curcol = 0;
@@ -144,6 +151,7 @@ void render(editor* E) {
       && curcol >= E->coloff
       && curcol < E->coloff + E->screencols
     ) {
+      if (c == '\n') write(STDOUT_FILENO, "\r", 1);
       write(STDOUT_FILENO, &c, 1);
     }
     if (c == '\n') {
@@ -151,7 +159,8 @@ void render(editor* E) {
         && currow < E->rowoff + E->screenrows
         && curcol < E->coloff
       ) {
-        write(STDOUT_FILENO, "\n", 1);
+        write(STDOUT_FILENO, "\x1b[K", 3);
+        write(STDOUT_FILENO, "\r\n", 2);
       }
       currow += 1;
       curcol = 0;
@@ -160,24 +169,12 @@ void render(editor* E) {
       curcol += 1;
     }
   }
-
   // if more rows empty after rendering, 
   // draw tilde on each empty row
-  if (currow < E->rowoff + E->screenrows - 1) {
-    // if last char is not '\n', that is,
-    // if no empty line at the end of file,
-    // go to empty line first
-    if (curcol != 0) {
-      write(STDOUT_FILENO, "\n", 1);
-      currow += 1;
-    }
-    while(currow < E->rowoff + E->screenrows) {
-      write(STDOUT_FILENO, "~", 1);
-      if (currow != E->rowoff + E->screenrows - 1) {
-        write(STDOUT_FILENO, "\n", 1);
-      }
-      currow += 1;
-    }
+  while (currow + 1 < E->rowoff + E->screenrows) {
+    write(STDOUT_FILENO, "\r\n", 2);
+    write(STDOUT_FILENO, "~", 1);
+    currow += 1;
   }
 }
 
