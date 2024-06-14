@@ -45,7 +45,6 @@ void enableRawMode(editor* E) {
     die(E, "tcgetattr");
   }
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-  raw.c_oflag &= ~(OPOST);
   raw.c_cflag |= (CS8);
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
   raw.c_cc[VMIN] = 0;
@@ -124,7 +123,6 @@ void render(editor* E) {
       && curcol >= E->coloff
       && curcol < E->coloff + E->screencols
     ) {
-      if (c == '\n') write(STDOUT_FILENO, "\r", 1);
       write(STDOUT_FILENO, &c, 1);
     }
     if (c == '\n') {
@@ -133,7 +131,7 @@ void render(editor* E) {
         && curcol < E->coloff
       ) {
         write(STDOUT_FILENO, "\x1b[K", 3);
-        write(STDOUT_FILENO, "\r\n", 2);
+        write(STDOUT_FILENO, "\n", 1);
       }
       currow += 1;
       curcol = 0;
@@ -151,7 +149,6 @@ void render(editor* E) {
       && curcol >= E->coloff
       && curcol < E->coloff + E->screencols
     ) {
-      if (c == '\n') write(STDOUT_FILENO, "\r", 1);
       write(STDOUT_FILENO, &c, 1);
     }
     if (c == '\n') {
@@ -160,7 +157,7 @@ void render(editor* E) {
         && curcol < E->coloff
       ) {
         write(STDOUT_FILENO, "\x1b[K", 3);
-        write(STDOUT_FILENO, "\r\n", 2);
+        write(STDOUT_FILENO, "\n", 1);
       }
       currow += 1;
       curcol = 0;
@@ -172,7 +169,7 @@ void render(editor* E) {
   // if more rows empty after rendering, 
   // draw tilde on each empty row
   while (currow + 1 < E->rowoff + E->screenrows) {
-    write(STDOUT_FILENO, "\r\n", 2);
+    write(STDOUT_FILENO, "\n", 1);
     write(STDOUT_FILENO, "~", 1);
     currow += 1;
   }
