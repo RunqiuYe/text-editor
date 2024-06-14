@@ -17,13 +17,13 @@
 #include "gapbuf.h"
 #include "editor.h"
 
-void die(editor* E, const char* s) {
-  write(STDOUT_FILENO, "\x1b[2J", 4);
-  write(STDOUT_FILENO, "\x1b[H", 3);
-  editor_free(E);
-  perror(s);
-  exit(1);
-}
+// void die(editor* E, const char* s) {
+//   write(STDOUT_FILENO, "\x1b[2J", 4);
+//   write(STDOUT_FILENO, "\x1b[H", 3);
+//   editor_free(E);
+//   perror(s);
+//   exit(1);
+// }
 
 bool is_editor(editor* E) {
   if (E == NULL) return false;
@@ -172,30 +172,30 @@ void editor_delete(editor* E) {
 
 /* file i/o */
 
-void editor_open(editor* E, char* filename) {
-  REQUIRES(is_editor(E) && filename != NULL);
+// void editor_open(editor* E, char* filename) {
+//   REQUIRES(is_editor(E) && filename != NULL);
 
-  // get all text in file into buffer
-  FILE* fp = fopen(filename, "r");
-  if (fp == NULL) {
-    die(E, "fopen");
-  }
+//   // get all text in file into buffer
+//   FILE* fp = fopen(filename, "r");
+//   if (fp == NULL) {
+//     die(E, "fopen");
+//   }
 
-  char c;
-  size_t count = 0;
-  while((c = fgetc(fp)) != EOF) {
-    count += 1;
-    editor_insert(E, c);
-  }
-  fclose(fp);
+//   char c;
+//   size_t count = 0;
+//   while((c = fgetc(fp)) != EOF) {
+//     count += 1;
+//     editor_insert(E, c);
+//   }
+//   fclose(fp);
 
-  // move cursor to start of file
-  for (size_t i = 0; i < count; i++) {
-    editor_backward(E);
-  }
+//   // move cursor to start of file
+//   for (size_t i = 0; i < count; i++) {
+//     editor_backward(E);
+//   }
 
-  ENSURES(is_editor(E));
-}
+//   ENSURES(is_editor(E));
+// }
 
 /* free */
 

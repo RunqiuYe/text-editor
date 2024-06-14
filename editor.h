@@ -22,7 +22,7 @@ struct editor_header {
 };
 typedef struct editor_header editor;
 
-void die(editor* E, const char* s);
+// void die(editor* E, const char* s);
 
 bool is_editor(editor* E);                    // representation invariant
 
@@ -39,7 +39,7 @@ void editor_delete(editor* E);                // remove the node to the cursorâ€
 
 /* file i/o */
 
-void editor_open(editor* E, char* filename);  // open file and write content into editor
+// void editor_open(editor* E, char* filename);  // open file and write content into editor
 
 /* free */
 
