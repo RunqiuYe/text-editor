@@ -204,12 +204,13 @@ void renderStatusBar(window* W) {
   char status[80], rstatus[80];
   size_t rlen;
   len = snprintf(status, sizeof(status), 
-                "%.20s - %zu lines",
+                "%.20s - %zu lines %s",
                 E->filename != NULL ? E->filename: "[No Name]",
-                E->numrows);
+                E->numrows,
+                E->dirty != 0 ? "(modified)" : "");
   rlen = snprintf(rstatus, sizeof(rstatus),
                   "(%zu,%zu)", E->row, E->col);
-  if (len > W->screenrows) len = W->screenrows;
+  if (len > W->screencols) len = W->screencols;
   write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
   write(STDOUT_FILENO, status, len);
   while (len < W->screencols - rlen) {
@@ -477,6 +478,7 @@ void openFile(window* W, char* filename) {
   for (size_t i = 0; i < count; i++) {
     editor_backward(E);
   }
+  E->dirty = 0;
 }
 
 void saveFile(window* W) {
@@ -492,6 +494,7 @@ void saveFile(window* W) {
       if (write(fd, s, len)) {
         close(fd);
         free(s);
+        E->dirty = 0;
         setMessage(W, "%d bytes written to disk", len);
         return;
       }

@@ -13,12 +13,10 @@ struct editor_header {
   size_t row;
   size_t col;
   size_t numrows;
-
   size_t rowoff;        // first visible row
   size_t coloff;        // first visible col
-
   char* filename;       // name of file
-
+  int dirty;            // dirty flag to show modified
 };
 typedef struct editor_header editor;
 

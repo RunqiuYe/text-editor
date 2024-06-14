@@ -39,6 +39,7 @@ editor* editor_new(void) {
   E->coloff = 0; // first visible col is 0
 
   E->filename = NULL;
+  E->dirty = 0;
 
   ENSURES(is_editor(E));
   return E;
@@ -143,6 +144,7 @@ void editor_insert(editor* E, char c) {
   else {
     E->col += 1;
   }
+  E->dirty += 1;
   ENSURES(is_editor(E));
 }
 
@@ -160,6 +162,7 @@ void editor_delete(editor* E) {
   else {
     E->col -= 1;
   }
+  E->dirty += 1;
   ENSURES(is_editor(E));
 }
 
