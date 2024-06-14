@@ -42,7 +42,7 @@ void die(window* W, const char* s) {
 
 window* window_new(void) {
   window* W = xmalloc(sizeof(window));
-  W->E = editor_new();
+  W->editor = editor_new();
   W->screenrows = 0;
   W->screencols = 0;
   if (tcgetattr(STDIN_FILENO, &W->orig_terminal) == -1) {
@@ -118,7 +118,7 @@ void getWindowSize(window* W) {
 }
 
 void scroll(window* W) {
-  editor* E = W->E;
+  editor* E = W->editor;
 
   // rowoff = first visible row
   // coloff = first visible col
@@ -139,6 +139,8 @@ void scroll(window* W) {
 }
 
 void refresh(window* W) {
+  editor* E = W->editor;
+
   scroll(W);
 
   write(STDOUT_FILENO, "\x1b[?25l", 6);
@@ -147,8 +149,8 @@ void refresh(window* W) {
 
   render(W);
 
-  size_t cursorrow = W->E->row - W->E->rowoff + 1;
-  size_t cursorcol = W->E->col - W->E->coloff + 1;
+  size_t cursorrow = E->row - E->rowoff + 1;
+  size_t cursorcol = E->col - E->coloff + 1;
 
   // Move cursor to correct position
   char buf[32];
@@ -167,7 +169,7 @@ void render(window* W) {
   // rowoff + screenrows = first invisible row
   // coloff + screencols = first invisible col
 
-  editor* E = W->E;
+  editor* E = W->editor;
   gapbuf* gb = E->buffer;
   char* front = gb->front;
   char* back = gb->back;
@@ -299,7 +301,7 @@ int readKey(window* W) {
 }
 
 void moveCursor(window* W, int key) {
-  editor* E = W->E;
+  editor* E = W->editor;
   switch (key) {
     case ARROW_LEFT: {
       editor_backward(E);
@@ -321,7 +323,7 @@ void moveCursor(window* W, int key) {
 }
 
 void processKey(window* W, bool* go) {
-  editor* E = W->E;
+  editor* E = W->editor;
   int c = readKey(W);
 
   switch (c) {
@@ -357,7 +359,7 @@ void processKey(window* W, bool* go) {
 }
 
 void openFile(window* W, char* filename) {
-  editor* E = W->E;
+  editor* E = W->editor;
 
   // get all text in file into buffer
   FILE* fp = fopen(filename, "r");
@@ -380,6 +382,6 @@ void openFile(window* W, char* filename) {
 }
 
 void window_free(window* W) {
-  editor_free(W->E);
+  editor_free(W->editor);
   free(W);
 }

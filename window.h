@@ -21,7 +21,7 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 struct window_header {
-  editor* E;
+  editor* editor;
   struct termios orig_terminal;
   size_t screenrows;                // total number of rows on screen
   size_t screencols;                // total number of cols on screen
