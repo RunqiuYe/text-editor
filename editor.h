@@ -14,15 +14,10 @@ struct editor_header {
   size_t col;
   size_t numrows;
 
-  struct termios orig_terminal;
-  size_t screenrows;    // total number of rows on screen
-  size_t screencols;    // total number of cols on screen
   size_t rowoff;        // first visible row
   size_t coloff;        // first visible col
 };
 typedef struct editor_header editor;
-
-// void die(editor* E, const char* s);
 
 bool is_editor(editor* E);                    // representation invariant
 
@@ -36,10 +31,6 @@ void editor_up(editor* E);
 void editor_down(editor* E);
 void editor_insert(editor* E, char c);        // insert c to the cursor’s left
 void editor_delete(editor* E);                // remove the node to the cursor’s left
-
-/* file i/o */
-
-// void editor_open(editor* E, char* filename);  // open file and write content into editor
 
 /* free */
 

@@ -17,13 +17,6 @@
 #include "gapbuf.h"
 #include "editor.h"
 
-// void die(editor* E, const char* s) {
-//   write(STDOUT_FILENO, "\x1b[2J", 4);
-//   write(STDOUT_FILENO, "\x1b[H", 3);
-//   editor_free(E);
-//   perror(s);
-//   exit(1);
-// }
 
 bool is_editor(editor* E) {
   if (E == NULL) return false;
@@ -42,8 +35,6 @@ editor* editor_new(void) {
   E->col = 0;
   E->numrows = 1;
 
-  E->screenrows = 0;
-  E->screencols = 0;
   E->rowoff = 1; // first visible row is 1
   E->coloff = 0; // first visible col is 0
 
@@ -170,32 +161,6 @@ void editor_delete(editor* E) {
   ENSURES(is_editor(E));
 }
 
-/* file i/o */
-
-// void editor_open(editor* E, char* filename) {
-//   REQUIRES(is_editor(E) && filename != NULL);
-
-//   // get all text in file into buffer
-//   FILE* fp = fopen(filename, "r");
-//   if (fp == NULL) {
-//     die(E, "fopen");
-//   }
-
-//   char c;
-//   size_t count = 0;
-//   while((c = fgetc(fp)) != EOF) {
-//     count += 1;
-//     editor_insert(E, c);
-//   }
-//   fclose(fp);
-
-//   // move cursor to start of file
-//   for (size_t i = 0; i < count; i++) {
-//     editor_backward(E);
-//   }
-
-//   ENSURES(is_editor(E));
-// }
 
 /* free */
 
