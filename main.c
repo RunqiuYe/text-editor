@@ -13,7 +13,6 @@
 int main(int argc, char* argv[]) {
   window* W = window_new();
   enableRawMode(W);
-  getWindowSize(W);
   if (argc >= 2) {
     openFile(W, argv[1]);
   }
