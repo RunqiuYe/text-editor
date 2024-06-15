@@ -26,7 +26,6 @@
 /* TO-DO: renderText function, render tabs */
 /* TO-DO: relevant tabs and cursor interaction */
 /* TO-DO: prompt */
-/* TO-DO: append buffer to resolve shiny issue */
 
 enum key {
   ENTER_KEY = 13,
@@ -161,7 +160,6 @@ void refresh(window* W) {
   scroll(W);
 
   write(STDOUT_FILENO, "\x1b[?25l", 6);
-  write(STDOUT_FILENO, "\x1b[2J", 4);
   write(STDOUT_FILENO, "\x1b[H", 3);
 
   render(W);
@@ -195,35 +193,12 @@ void renderStatusBar(window* W) {
   write(STDOUT_FILENO, filenames, len);
   write(STDOUT_FILENO, "\x1b[m", 3); // reset color
   write(STDOUT_FILENO, "\x1b[;100m", 7);
-  while (len < W->screencols) {
+  while (len < W->screencols + 1) {
     write(STDOUT_FILENO, " ", 1);
     len += 1;
   }
   write(STDOUT_FILENO, "\x1b[m", 3); // reset color
-
-  // move cursor to second last row
-  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", W->screenrows + 2);
-  write(STDOUT_FILENO, buf, strlen(buf));
-
-  // second last row to display file status
-  char status[80], rstatus[80];
-  size_t rlen;
-  len = snprintf(status, sizeof(status), 
-                "%.20s - %zu lines %s",
-                E->filename != NULL ? E->filename: "[No Name]",
-                E->numrows,
-                E->dirty != 0 ? "(modified)" : "");
-  rlen = snprintf(rstatus, sizeof(rstatus),
-                  "Position (%zu,%zu)", E->row, E->col);
-  if (len > W->screencols) len = W->screencols;
-  write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
-  write(STDOUT_FILENO, status, len);
-  while (len < W->screencols - rlen) {
-    write(STDOUT_FILENO, " ", 1);
-    len += 1;
-  }
-  write(STDOUT_FILENO, rstatus, rlen);
-  write(STDOUT_FILENO, "\x1b[m", 3); // reset color
+  write(STDOUT_FILENO, "\x1b[K", 3);
 }
 
 void renderText(window* W) {
@@ -260,6 +235,7 @@ void renderText(window* W) {
       && curcol >= E->coloff
       && curcol < E->coloff + W->screencols
     ) {
+      if (c == '\n') write(STDOUT_FILENO, "\x1b[K", 3);
       write(STDOUT_FILENO, &c, 1);
     }
     if (c == '\n') {
@@ -267,7 +243,9 @@ void renderText(window* W) {
         && currow < E->rowoff + W->screenrows
         && curcol < E->coloff
       ) {
+        write(STDOUT_FILENO, "\x1b[K", 3);
         write(STDOUT_FILENO, "\n", 1);
+        // write(STDOUT_FILENO, "\x1b[K", 3);
       }
       currow += 1;
       curcol = 0;
@@ -276,6 +254,7 @@ void renderText(window* W) {
       curcol += 1;
     }
   }
+
   // render text in back of buffer
   for (size_t j = 0; j < backlen; j++) {
     if (currow >= E->rowoff + W->screenrows) break;
@@ -285,6 +264,7 @@ void renderText(window* W) {
       && curcol >= E->coloff
       && curcol < E->coloff + W->screencols
     ) {
+      if (c == '\n') write(STDOUT_FILENO, "\x1b[K", 3);
       write(STDOUT_FILENO, &c, 1);
     }
     if (c == '\n') {
@@ -292,6 +272,7 @@ void renderText(window* W) {
         && currow < E->rowoff + W->screenrows
         && curcol < E->coloff
       ) {
+        write(STDOUT_FILENO, "\x1b[K", 3);
         write(STDOUT_FILENO, "\n", 1);
       }
       currow += 1;
@@ -301,9 +282,14 @@ void renderText(window* W) {
       curcol += 1;
     }
   }
+  if (currow < E->rowoff + W->screenrows) {
+    write(STDOUT_FILENO, "\x1b[K", 3);
+  }
+
   // if more rows empty after rendering, 
   // draw tilde on each empty row
   while (currow + 1 < E->rowoff + W->screenrows) {
+    write(STDOUT_FILENO, "\x1b[K", 3);
     write(STDOUT_FILENO, "\n", 1);
     write(STDOUT_FILENO, "~", 1);
     currow += 1;
@@ -311,8 +297,37 @@ void renderText(window* W) {
 }
 
 void renderMessageBar(window* W) {
-  // move cursor to last row
+  /* TO-DO: second last row, last column render bug */
+
+  editor* E = W->editor;
+
+  // move cursor to second last row
   char buf[32];
+  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", W->screenrows + 2);
+  write(STDOUT_FILENO, buf, strlen(buf));
+
+  // second last row to display file status
+  char status[80], rstatus[80];
+  size_t len, rlen;
+  len = snprintf(status, sizeof(status), 
+                "%.20s - %zu lines %s",
+                E->filename != NULL ? E->filename: "[No Name]",
+                E->numrows,
+                E->dirty != 0 ? "(modified)" : "");
+  rlen = snprintf(rstatus, sizeof(rstatus),
+                  "Position (%zu,%zu)", E->row, E->col);
+  if (len > W->screencols) len = W->screencols;
+  write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
+  write(STDOUT_FILENO, status, len);
+  while (len < W->screencols - rlen + 1) {
+    write(STDOUT_FILENO, " ", 1);
+    len += 1;
+  }
+  write(STDOUT_FILENO, rstatus, rlen);
+  write(STDOUT_FILENO, "\x1b[K", 3);
+  write(STDOUT_FILENO, "\x1b[m", 3); // reset color
+
+  // move cursor to last row
   snprintf(buf, sizeof(buf), "\x1b[%zu;1H", W->screenrows + 3);
   write(STDOUT_FILENO, buf, strlen(buf));
 
@@ -321,6 +336,7 @@ void renderMessageBar(window* W) {
   if (msglen != 0 && time(NULL) - W->messageTime < 10) {
     write(STDOUT_FILENO, W->message, msglen);
   }
+  write(STDOUT_FILENO, "\x1b[K", 3);
 }
 
 void setMessage(window* W, const char* fmt, ...) {
