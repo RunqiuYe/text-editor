@@ -1,5 +1,5 @@
 rye: gapbuf.c editor.c window.c main.c
-	$ gcc -o rye -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c window.c main.c
+	$ gcc -o rye -O3 -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c window.c main.c
 kilo: test.c
 	$ gcc -o kilo -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic test.c
 escape: escape.c

@@ -26,6 +26,7 @@
 /* TO-DO: renderText function, render tabs */
 /* TO-DO: relevant tabs and cursor interaction */
 /* TO-DO: prompt */
+/* TO-DO: append buffer to resolve shiny issue */
 
 enum key {
   ENTER_KEY = 13,
@@ -187,7 +188,7 @@ void renderStatusBar(window* W) {
   // first row to display file names
   char filenames[80];
   size_t len;
-  len = snprintf(filenames, sizeof(filenames), " %.20s ",
+  len = snprintf(filenames, sizeof(filenames), "[ %.20s ]",
                 E->filename != NULL ? E->filename: " [No Name] ");
   if (len > W->screencols) len = W->screencols;
   write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
