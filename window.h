@@ -45,8 +45,9 @@ void getWindowSize(window* W);
 
 void scroll(window* W);                           // adjust offset to scroll
 void refresh(window* W);                          // redraw everything
-void renderStatusBar(window* W);                  // draw status bar
+void renderFileBar(window* W);                    // draw file bar
 void renderText(window* W);                       // render text file
+void renderStatusBar(window* W);                  // render status bar
 void renderMessageBar(window* W);                 // render message bar
 void setMessage(window* W, const char* fmt, ...); // set message bar message
 void render(window* W);

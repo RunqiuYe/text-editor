@@ -21,7 +21,7 @@
 #include "editor.h"
 #include "window.h"
 
-#define STATUS_BAR_OFFSET ((size_t)1)
+#define MESSAGE_TIME (10)
 
 /* TO-DO: renderText function, render tabs */
 /* TO-DO: relevant tabs and cursor interaction */
@@ -164,7 +164,7 @@ void refresh(window* W) {
 
   render(W);
 
-  size_t cursorrow = E->row - E->rowoff + 1 + STATUS_BAR_OFFSET;
+  size_t cursorrow = E->row - E->rowoff + 2;
   size_t cursorcol = E->col - E->coloff + 1;
 
   // Move cursor to correct position
@@ -175,12 +175,12 @@ void refresh(window* W) {
   write(STDOUT_FILENO, "\x1b[?25h", 6);
 }
 
-void renderStatusBar(window* W) {
+void renderFileBar(window* W) {
   editor* E = W->editor;
 
   // move cursor to first row
   char buf[32];
-  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", STATUS_BAR_OFFSET);
+  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", (size_t)1);
   write(STDOUT_FILENO, buf, strlen(buf));
 
   // first row to display file names
@@ -199,6 +199,7 @@ void renderStatusBar(window* W) {
   }
   write(STDOUT_FILENO, "\x1b[m", 3); // reset color
   write(STDOUT_FILENO, "\x1b[K", 3);
+  write(STDOUT_FILENO, "\n", 1);
 }
 
 void renderText(window* W) {
@@ -207,7 +208,7 @@ void renderText(window* W) {
 
   // move cursor to second row
   char buf[32];
-  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", 1 + STATUS_BAR_OFFSET);
+  snprintf(buf, sizeof(buf), "\x1b[%zu;1H", (size_t)2);
   write(STDOUT_FILENO, buf, strlen(buf));
 
   editor* E = W->editor;
@@ -245,7 +246,6 @@ void renderText(window* W) {
       ) {
         write(STDOUT_FILENO, "\x1b[K", 3);
         write(STDOUT_FILENO, "\n", 1);
-        // write(STDOUT_FILENO, "\x1b[K", 3);
       }
       currow += 1;
       curcol = 0;
@@ -282,9 +282,9 @@ void renderText(window* W) {
       curcol += 1;
     }
   }
-  if (currow < E->rowoff + W->screenrows) {
-    write(STDOUT_FILENO, "\x1b[K", 3);
-  }
+
+  // clear line after render all text
+  write(STDOUT_FILENO, "\x1b[K", 3);
 
   // if more rows empty after rendering, 
   // draw tilde on each empty row
@@ -296,9 +296,7 @@ void renderText(window* W) {
   }
 }
 
-void renderMessageBar(window* W) {
-  /* TO-DO: second last row, last column render bug */
-
+void renderStatusBar(window* W) {
   editor* E = W->editor;
 
   // move cursor to second last row
@@ -314,26 +312,29 @@ void renderMessageBar(window* W) {
                 E->filename != NULL ? E->filename: "[No Name]",
                 E->numrows,
                 E->dirty != 0 ? "(modified)" : "");
+  if (len > W->screencols) len = W->screencols;
+  
   rlen = snprintf(rstatus, sizeof(rstatus),
                   "Position (%zu,%zu)", E->row, E->col);
-  if (len > W->screencols) len = W->screencols;
+
   write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
   write(STDOUT_FILENO, status, len);
-  while (len < W->screencols - rlen + 1) {
+  for (size_t i = 0; i < W->screencols - len - rlen; i++) {
     write(STDOUT_FILENO, " ", 1);
-    len += 1;
   }
   write(STDOUT_FILENO, rstatus, rlen);
-  write(STDOUT_FILENO, "\x1b[K", 3);
   write(STDOUT_FILENO, "\x1b[m", 3); // reset color
+}
 
+void renderMessageBar(window* W) {
   // move cursor to last row
+  char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%zu;1H", W->screenrows + 3);
   write(STDOUT_FILENO, buf, strlen(buf));
 
   size_t msglen = strlen(W->message);
   if (msglen > W->screencols) msglen = W->screencols;
-  if (msglen != 0 && time(NULL) - W->messageTime < 10) {
+  if (msglen != 0 && time(NULL) - W->messageTime < MESSAGE_TIME) {
     write(STDOUT_FILENO, W->message, msglen);
   }
   write(STDOUT_FILENO, "\x1b[K", 3);
@@ -348,8 +349,9 @@ void setMessage(window* W, const char* fmt, ...) {
 }
 
 void render(window* W) {
-  renderStatusBar(W);
+  renderFileBar(W);
   renderText(W);
+  renderStatusBar(W);
   renderMessageBar(W);
 }
 
