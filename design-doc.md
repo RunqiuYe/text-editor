@@ -1,6 +1,8 @@
 # Text editor in C
 
-## Gap buffer
+## Structure
+
+### Gap buffer
 
 We will use *gap buffer* to store contents of an editor. In the gap buffer, the position of the cursor is represented with a gap. In other word, the gap is the cursor. With the help of this gap, we can achieve efficient movement of the cursor, insertion, and deletion of text, as will be shown. To illustrate, consider the following text `applepie` with cursor to the right of the first `e`. With gap buffer, this can be represented as `apple[]pie`.
 
@@ -90,7 +92,7 @@ void gapbuf_print(gapbuf* gb);              // print the content of gapbuf for d
 
 ```
 
-## Editor
+### Editor
 
 For each text file, we want to use an editor to modify the file. 
 
@@ -137,7 +139,7 @@ Note that the user will interact with the editor directly. Therefore, when the c
 
 Now we finish the part where the editor interacts with the buffer (text). Next we want to add how the editor interacts with our terminal, since that's where the text editor is going to be.
 
-## Window
+### Window
 
 We use a new structure `window` to directly interacts with terminal and display our file. This will make things easier when we allow the text editor to open multiple buffers at a time. In that case, we only have one window, but we can have multiple editor, one for each file.
 
@@ -153,7 +155,7 @@ struct window_header {
 typedef struct window_header window;
 ```
 
-We also update the `editor` interface. We add two fields `rowoff` and `coloff` with type `size_t`. This will allow us to render the text more easily and eventually scroll with our arrow keys. Now the `editor` type looks like this.
+We also update the `editor` interface. We add two fields `rowoff` and `coloff` with type `size_t`. This will allow us to render the text more easily and eventually scroll with our arrow keys. We also include the name of the current file, so as to render it on our status bar. Now the `editor` type looks like this.
 
 ```c
 struct editor_header {
@@ -164,6 +166,8 @@ struct editor_header {
 
   size_t rowoff;        // first visible row
   size_t coloff;        // first visible col
+  
+  char* filename;
 };
 typedef struct editor_header editor;
 ```
@@ -171,19 +175,37 @@ typedef struct editor_header editor;
 The `window` library contains these functions. This will allow us to initialize the window, enable raw mode, display everything, process key press, and open text files.
 
 ```c
-void die(window* W, const char* s);           // debugging and display error
 
-window* window_new(void);                     // create new window
+void die(window* W, const char* s);               // debugging and display error
 
-void enableRawMode(window* W);                // enable raw mode
-void disableRawMode(window* W);               // disable raw mode
-void refresh(window* W);                      // redraw everything
-void processKey(window* W, bool* go);         // process key press
-void openFile(window* W, char* filename);     // open text file
-void window_free(window* W);                  // free
+window* window_new(void);                         // create new window
+
+void enableRawMode(window* W);                    // enable raw mode
+void disableRawMode(window* W);                   // disable raw mode
+
+int getCursorPosition(size_t* row, size_t* col);
+int getScreenSize(size_t* numrows, size_t* numcols);
+void getWindowSize(window* W);
+
+void scroll(window* W);                           // adjust offset to scroll
+void refresh(window* W);                          // redraw everything
+void renderStatusBar(window* W);                  // draw status bar
+void renderText(window* W);                       // render text file
+void renderMessageBar(window* W);                 // render message bar
+void setMessage(window* W, const char* fmt, ...); // set message bar message
+void render(window* W);
+
+int readKey(window* W);                           // read key presses
+void moveCursor(window* W, int key);              // move cursor
+void processKey(window* W, bool* go);             // process key press
+
+void openFile(window* W, char* filename);         // open text file
+void saveFile(window* W);                         // save edited file
+
+void window_free(window* W);                      // free
 ```
 
-Accordingly, we have a rough model of our `main` functino in `main.c`.
+Accordingly, we have a rough model of our `main` functino in `main.c`. We first initialize the window, then enable raw mode for our text editor. The command line arguments allow us to open files when opening the editor. This finishes the setup. After that, we constantly read in key presses from user and refresh the screen accordingly. When the user quite the editor, we disable raw mode and set the terminal to it's original setup, free all allocated memory, and end the program.
 
 ```c
 int main(int argc, char* argv[]) {
@@ -211,5 +233,15 @@ int main(int argc, char* argv[]) {
 
 
 
+## Implementation
 
+
+
+
+
+## References
+
+[Build your own text editor](https://viewsourcecode.org/snaptoken/kilo/)
+
+[ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code#)
 
