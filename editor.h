@@ -30,6 +30,8 @@ void editor_forward(editor* E);               // move the cursor forward, to the
 void editor_backward(editor* E);              // move the cursor backward, to the left
 void editor_up(editor* E);
 void editor_down(editor* E);
+void editor_endline(editor* E);
+void editor_startline(editor* E);
 void editor_insert(editor* E, char c);        // insert c to the cursor’s left
 void editor_delete(editor* E);                // remove the node to the cursor’s left
 

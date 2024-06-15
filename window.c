@@ -435,6 +435,14 @@ void moveCursor(window* W, int key) {
       editor_down(E);
       break;
     }
+    case CTRL_KEY('a'): {
+      editor_startline(E);
+      break;
+    }
+    case CTRL_KEY('e'): {
+      editor_endline(E);
+      break;
+    }
   }
 }
 
@@ -456,7 +464,9 @@ void processKey(window* W, bool* go) {
     case ARROW_UP:
     case ARROW_DOWN:
     case ARROW_LEFT:
-    case ARROW_RIGHT: {
+    case ARROW_RIGHT: 
+    case CTRL_KEY('a'):
+    case CTRL_KEY('e'): {
       moveCursor(W, c);
       break;
     }

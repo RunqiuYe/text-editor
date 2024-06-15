@@ -133,6 +133,24 @@ void editor_down(editor* E) {
   ENSURES(is_editor(E));
 }
 
+void editor_endline(editor* E) {
+  REQUIRES(is_editor(E));
+  while (!gapbuf_at_right(E->buffer) 
+          && E->buffer->back[E->buffer->backlen - 1] != '\n') {
+    editor_forward(E);
+  }
+  ENSURES(is_editor(E));
+}
+
+void editor_startline(editor* E) {
+  REQUIRES(is_editor(E));
+  while (!gapbuf_at_left(E->buffer)
+          && E->buffer->front[E->buffer->frontlen - 1] != '\n') {
+    editor_backward(E);
+  }
+  ENSURES(is_editor(E));
+}
+
 void editor_insert(editor* E, char c) {
   REQUIRES(is_editor(E));
   gapbuf_insert(E->buffer, c);
