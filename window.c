@@ -227,24 +227,15 @@ void renderText(window* W) {
   char c;
   size_t currow = 1;
   size_t curcol = 0;
+
   // render text in front of buffer
   for (size_t i = 0; i < frontlen; i++) {
+    // if go out of bound, stop immediately
     if (currow >= E->rowoff + W->screenrows) break;
-
+    // current char to render
     c = front[i];
-
     if (c == '\n') {
-      if (currow >= E->rowoff
-        && currow < E->rowoff + W->screenrows
-        && curcol >= E->coloff
-        && curcol < E->coloff + W->screencols
-      ) {
-        write(STDOUT_FILENO, "\x1b[K", 3);
-        write(STDOUT_FILENO, "\n", 1);
-      }
-      else if (currow >= E->rowoff
-        && currow < E->rowoff + W->screenrows
-      ) {
+      if (currow >= E->rowoff && currow < E->rowoff + W->screenrows) {
         write(STDOUT_FILENO, "\x1b[K", 3);
         write(STDOUT_FILENO, "\n", 1);
       }
@@ -252,10 +243,8 @@ void renderText(window* W) {
       curcol = 0;
     }
     else if (c == '\t') {
-      if (currow >= E->rowoff
-        && currow < E->rowoff + W->screenrows
-        && curcol >= E->coloff
-        && curcol < E->coloff + W->screencols
+      if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
+        && curcol >= E->coloff && curcol < E->coloff + W->screencols
       ) {
         write(STDOUT_FILENO, " ", 1);
         curcol += 1;
@@ -272,10 +261,8 @@ void renderText(window* W) {
       }
     }
     else {
-      if (currow >= E->rowoff
-        && currow < E->rowoff + W->screenrows
-        && curcol >= E->coloff
-        && curcol < E->coloff + W->screencols
+      if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
+        && curcol >= E->coloff && curcol < E->coloff + W->screencols
       ) {
         write(STDOUT_FILENO, &c, 1);
       }
@@ -285,20 +272,12 @@ void renderText(window* W) {
 
   // render text in back of buffer
   for (size_t j = 0; j < backlen; j++) {
+    // if go out of bound, stop immediately
     if (currow >= E->rowoff + W->screenrows) break;
+    // current char to render
     c = back[backlen - j - 1];
     if (c == '\n') {
-      if (currow >= E->rowoff
-        && currow < E->rowoff + W->screenrows
-        && curcol >= E->coloff
-        && curcol < E->coloff + W->screencols
-      ) {
-        write(STDOUT_FILENO, "\x1b[K", 3);
-        write(STDOUT_FILENO, "\n", 1);
-      }
-      else if (currow >= E->rowoff
-        && currow < E->rowoff + W->screenrows
-      ) {
+      if (currow >= E->rowoff && currow < E->rowoff + W->screenrows) {
         write(STDOUT_FILENO, "\x1b[K", 3);
         write(STDOUT_FILENO, "\n", 1);
       }
@@ -306,10 +285,8 @@ void renderText(window* W) {
       curcol = 0;
     }
     else if (c == '\t') {
-      if (currow >= E->rowoff
-        && currow < E->rowoff + W->screenrows
-        && curcol >= E->coloff
-        && curcol < E->coloff + W->screencols
+      if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
+        && curcol >= E->coloff && curcol < E->coloff + W->screencols
       ) {
         write(STDOUT_FILENO, " ", 1);
         curcol += 1;
@@ -326,10 +303,8 @@ void renderText(window* W) {
       }
     }
     else {
-      if (currow >= E->rowoff
-        && currow < E->rowoff + W->screenrows
-        && curcol >= E->coloff
-        && curcol < E->coloff + W->screencols
+      if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
+        && curcol >= E->coloff && curcol < E->coloff + W->screencols
       ) {
         write(STDOUT_FILENO, &c, 1);
       }
