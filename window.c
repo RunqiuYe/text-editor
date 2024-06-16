@@ -22,7 +22,6 @@
 #include "window.h"
 
 #define MESSAGE_TIME (10)
-#define TAB_STOP 8
 
 /* TO-DO: renderText function, render tabs */
 /* TO-DO: relevant tabs and cursor interaction */
@@ -147,11 +146,11 @@ void scroll(window* W) {
   if (E->row >= E->rowoff + W->screenrows) {
     E->rowoff = E->row - W->screenrows + 1;
   }
-  if (E->col < E->coloff) {
-    E->coloff = E->col;
+  if (E->rendercol < E->coloff) {
+    E->coloff = E->rendercol;
   }
-  if (E->col >= E->coloff + W->screencols) {
-    E->coloff = E->col - W->screencols + 1;
+  if (E->rendercol >= E->coloff + W->screencols) {
+    E->coloff = E->rendercol - W->screencols + 1;
   }
 }
 
@@ -230,11 +229,11 @@ void renderText(window* W) {
   size_t curcol = 0;
   // render text in front of buffer
   for (size_t i = 0; i < frontlen; i++) {
-    // if already out of bound, stop immediately
+    // if go out of bound, stop immediately
     if (currow >= E->rowoff + W->screenrows) break;
 
     c = front[i];
-
+    
     if (currow >= E->rowoff
       && currow < E->rowoff + W->screenrows
       && curcol >= E->coloff
@@ -246,35 +245,36 @@ void renderText(window* W) {
         currow += 1;
         curcol = 0;
       }
-      else if (c == '\t') {
-        write(STDOUT_FILENO, " ", 1);
-        curcol += 1;
-        while (curcol % TAB_STOP != 0) {
-          write(STDOUT_FILENO, " ", 1);
-          curcol += 1;
-        }
-      }
+      // else if (c == '\t') {
+      //   write(STDOUT_FILENO, " ", 1);
+      //   curcol += 1;
+      //   while (curcol % TAB_STOP != 0) {
+      //     write(STDOUT_FILENO, " ", 1);
+      //     curcol += 1;
+      //   }
+      // }
       else {
         write(STDOUT_FILENO, &c, 1);
         curcol += 1;
       }
     }
-
-    // used to render short line and large coloff
-    if (c == '\n') {
-      if (currow >= E->rowoff
+    // used to render short line with big coloff
+    if (c == '\n' && currow >= E->rowoff
         && currow < E->rowoff + W->screenrows
-        && curcol < E->coloff
-      ) {
-        write(STDOUT_FILENO, "\x1b[K", 3);
-        write(STDOUT_FILENO, "\n", 1);
-      }
+        && curcol < E->coloff) {
+      write(STDOUT_FILENO, "\x1b[K", 3);
+      write(STDOUT_FILENO, "\n", 1);
+      currow += 1;
+      curcol = 0;
     }
   }
 
+  // assert(curcol == E->rendercol);
+  // assert(currow == E->row);
+
   // render text in back of buffer
   for (size_t j = 0; j < backlen; j++) {
-
+    // if go out of bound, stop immediately
     if (currow >= E->rowoff + W->screenrows) break;
 
     c = back[backlen - j - 1];
@@ -290,29 +290,28 @@ void renderText(window* W) {
         currow += 1;
         curcol = 0;
       }
-      else if (c == '\t') {
-        write(STDOUT_FILENO, " ", 1);
-        curcol += 1;
-        while (curcol % TAB_STOP != 0) {
-          write(STDOUT_FILENO, " ", 1);
-          curcol += 1;
-        }
-      }
+      // else if (c == '\t') {
+      //   write(STDOUT_FILENO, " ", 1);
+      //   curcol += 1;
+      //   while (curcol % TAB_STOP != 0) {
+      //     write(STDOUT_FILENO, " ", 1);
+      //     curcol += 1;
+      //   }
+      // }
       else {
         write(STDOUT_FILENO, &c, 1);
         curcol += 1;
       }
     }
 
-    // used to render short line and large coloff
-    if (c == '\n') {
-      if (currow >= E->rowoff
+    // used to render short line with big coloff
+    if (c == '\n' && currow >= E->rowoff
         && currow < E->rowoff + W->screenrows
-        && curcol < E->coloff
-      ) {
-        write(STDOUT_FILENO, "\x1b[K", 3);
-        write(STDOUT_FILENO, "\n", 1);
-      }
+        && curcol < E->coloff) {
+      write(STDOUT_FILENO, "\x1b[K", 3);
+      write(STDOUT_FILENO, "\n", 1);
+      currow += 1;
+      curcol = 0;
     }
   }
 
