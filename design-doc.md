@@ -24,8 +24,8 @@ struct gapbuf_header {
   size_t frontlen;    // length of front string, frontlen < limit
   size_t backlen;     // length of back string, backlen < limit
   size_t limit;       // bytes allocated for front and back buffer
-  		      // (we require them to have the same length),
-  		      // limit > 0
+                      // (we require them to have the same length),
+                      // limit > 0
 };
 typedef struct gapbuf_header gapbuf;
 ```
@@ -79,16 +79,13 @@ void gapbuf_insert(gapbuf* gb, char c);     // insert a character before cursor
 char gapbuf_delete(gapbuf* gb);             // delete a character before cursor and return deleted char
 char gapbuf_delete_right(gapbuf* gb);       // delete a character after cursor and return deleted char
 
-// void strbuf_add(strbuf *sb, char *str, size_t len);
-// void strbuf_addstr(strbuf *sb, char *str);
+size_t gapbuf_row(gapbuf* gb);         // row of cursor position
+size_t gapbuf_col(gapbuf* gb);         // column of cursor position
+size_t gapbuf_numrows(gapbuf* gb);     // number of rows in gap buffer
 
-size_t gapbuf_row(gapbuf* gb);                 // row of cursor position
-size_t gapbuf_col(gapbuf* gb);                 // column of cursor position
-size_t gapbuf_numrows(gapbuf* gb);             // number of rows in gap buffer
-
-void gapbuf_free(gapbuf* gb);               // free allocated gapbuffer, and return the string contained
-char* gapbuf_str(gapbuf* gb);               // the string contained in the text buffer
-void gapbuf_print(gapbuf* gb);              // print the content of gapbuf for debugging
+void gapbuf_free(gapbuf* gb);          // free allocated gapbuffer, and return the string contained
+char* gapbuf_str(gapbuf* gb);          // the string contained in the text buffer
+void gapbuf_print(gapbuf* gb);         // print the content of gapbuf for debugging
 
 ```
 
@@ -126,8 +123,8 @@ where we extend the `gapbuf` interface with a new function `gapbuf_numrows`. The
 ```c
 bool is_editor(editor* E);              // representation invariant
 
-editor* editor_new(void); 	        // create a new and empty editor
-void editor_forward(editor* E); 	// move the cursor forward, to the right
+editor* editor_new(void);               // create a new and empty editor
+void editor_forward(editor* E);         // move the cursor forward, to the right
 void editor_backward(editor* E);        // move the cursor backward, to the left
 void editor_insert(editor* E, char c); 	// insert c to the cursor’s left
 void editor_delete(editor* E); 	        // remove the node to the cursor’s left
@@ -175,7 +172,6 @@ typedef struct editor_header editor;
 The `window` library contains these functions. This will allow us to initialize the window, enable raw mode, display everything, process key press, and open text files.
 
 ```c
-
 void die(window* W, const char* s);               // debugging and display error
 
 window* window_new(void);                         // create new window
@@ -189,8 +185,9 @@ void getWindowSize(window* W);
 
 void scroll(window* W);                           // adjust offset to scroll
 void refresh(window* W);                          // redraw everything
-void renderStatusBar(window* W);                  // draw status bar
+void renderFileBar(window* W);                    // draw file bar
 void renderText(window* W);                       // render text file
+void renderStatusBar(window* W);                  // render status bar
 void renderMessageBar(window* W);                 // render message bar
 void setMessage(window* W, const char* fmt, ...); // set message bar message
 void render(window* W);
@@ -230,14 +227,6 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 ```
-
-
-
-## Implementation
-
-
-
-
 
 ## References
 
