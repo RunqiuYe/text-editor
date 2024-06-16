@@ -24,8 +24,8 @@ struct gapbuf_header {
   size_t frontlen;    // length of front string, frontlen < limit
   size_t backlen;     // length of back string, backlen < limit
   size_t limit;       // bytes allocated for front and back buffer
-  					          // (we require them to have the same length),
-  					          // limit > 0
+  		      // (we require them to have the same length),
+  		      // limit > 0
 };
 typedef struct gapbuf_header gapbuf;
 ```
@@ -86,7 +86,7 @@ size_t gapbuf_row(gapbuf* gb);                 // row of cursor position
 size_t gapbuf_col(gapbuf* gb);                 // column of cursor position
 size_t gapbuf_numrows(gapbuf* gb);             // number of rows in gap buffer
 
-void gapbuf_free(gapbuf* gb);              // free allocated gapbuffer, and return the string contained
+void gapbuf_free(gapbuf* gb);               // free allocated gapbuffer, and return the string contained
 char* gapbuf_str(gapbuf* gb);               // the string contained in the text buffer
 void gapbuf_print(gapbuf* gb);              // print the content of gapbuf for debugging
 
@@ -126,9 +126,9 @@ where we extend the `gapbuf` interface with a new function `gapbuf_numrows`. The
 ```c
 bool is_editor(editor* E);              // representation invariant
 
-editor* editor_new(void); 	            // create a new and empty editor
-void editor_forward(editor* E); 	      // move the cursor forward, to the right
-void editor_backward(editor* E); 	      // move the cursor backward, to the left
+editor* editor_new(void); 	        // create a new and empty editor
+void editor_forward(editor* E); 	// move the cursor forward, to the right
+void editor_backward(editor* E);        // move the cursor backward, to the left
 void editor_insert(editor* E, char c); 	// insert c to the cursor’s left
 void editor_delete(editor* E); 	        // remove the node to the cursor’s left
 
