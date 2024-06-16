@@ -481,7 +481,7 @@ void editorUpdateRow(erow *row) {
   int idx = 0;
   for (j = 0; j < row->size; j++) {
     if (row->chars[j] == '\t') {
-      row->render[idx] = ' ';
+      row->render[idx++] = ' ';
       while (idx % TAB_STOP != 0) row->render[idx++] = ' ';
     }
     else {
