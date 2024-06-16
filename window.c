@@ -229,6 +229,8 @@ void renderText(window* W) {
     if (currow >= E->rowoff + W->screenrows) break;
     // current char to render
     c = front[i];
+
+    // if current char is newline
     if (c == '\n') {
       if (currow >= E->rowoff && currow < E->rowoff + W->screenrows) {
         write(STDOUT_FILENO, "\x1b[K", 3);
@@ -236,8 +238,11 @@ void renderText(window* W) {
       }
       currow += 1;
       curcol = 0;
+      continue;
     }
-    else if (c == '\t') {
+
+    // if current char is tab
+    if (c == '\t') {
       if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
         && curcol >= E->coloff && curcol < E->coloff + W->screencols
       ) {
@@ -254,15 +259,16 @@ void renderText(window* W) {
           curcol += 1;
         }
       }
+      continue;
     }
-    else {
-      if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
-        && curcol >= E->coloff && curcol < E->coloff + W->screencols
-      ) {
-        write(STDOUT_FILENO, &c, 1);
-      }
-      curcol += 1;
+
+    // default case
+    if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
+      && curcol >= E->coloff && curcol < E->coloff + W->screencols
+    ) {
+      write(STDOUT_FILENO, &c, 1);
     }
+    curcol += 1;
   }
 
   // render text in back of buffer
@@ -271,6 +277,8 @@ void renderText(window* W) {
     if (currow >= E->rowoff + W->screenrows) break;
     // current char to render
     c = back[backlen - j - 1];
+    
+    // if current char is newline
     if (c == '\n') {
       if (currow >= E->rowoff && currow < E->rowoff + W->screenrows) {
         write(STDOUT_FILENO, "\x1b[K", 3);
@@ -278,8 +286,11 @@ void renderText(window* W) {
       }
       currow += 1;
       curcol = 0;
+      continue;
     }
-    else if (c == '\t') {
+
+    // if current char is tab
+    if (c == '\t') {
       if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
         && curcol >= E->coloff && curcol < E->coloff + W->screencols
       ) {
@@ -296,15 +307,16 @@ void renderText(window* W) {
           curcol += 1;
         }
       }
+      continue;
     }
-    else {
-      if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
-        && curcol >= E->coloff && curcol < E->coloff + W->screencols
-      ) {
-        write(STDOUT_FILENO, &c, 1);
-      }
-      curcol += 1;
+    
+    // default case
+    if (currow >= E->rowoff && currow < E->rowoff + W->screenrows
+      && curcol >= E->coloff && curcol < E->coloff + W->screencols
+    ) {
+      write(STDOUT_FILENO, &c, 1);
     }
+    curcol += 1;
   }
 
   // clear line after render all text
