@@ -205,6 +205,7 @@ void editor_delete(editor* E) {
   }
   else {
     E->col -= 1;
+    E->rendercol -= 1;
   }
   E->dirty += 1;
   ENSURES(is_editor(E));
