@@ -190,6 +190,20 @@ size_t gapbuf_col(gapbuf* gb) {
   return col;
 }
 
+size_t gapbuf_rendercol(gapbuf* gb) {
+  REQUIRES(is_gapbuf(gb));
+  int rendercol = 0;
+  for (size_t i = 0; i < gb->frontlen; i++) {
+    if (gb->front[i] == '\n') rendercol = 0;
+    else if (gb->front[i] == '\t') {
+      rendercol += (TAB_STOP - 1) - (rendercol % TAB_STOP);
+      rendercol += 1;
+    }
+    else rendercol += 1;
+  }
+  return rendercol;
+}
+
 size_t gapbuf_numrows(gapbuf* gb) {
   REQUIRES(is_gapbuf(gb));
   size_t row = 1;

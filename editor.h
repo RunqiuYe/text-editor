@@ -10,9 +10,10 @@
 
 struct editor_header {
   gapbuf* buffer;
-  size_t row;
-  size_t col;
-  size_t numrows;
+  size_t row;           // current row
+  size_t col;           // current col
+  size_t rendercol;     // col when render, considering tabs
+  size_t numrows;       // total number of rows
   size_t rowoff;        // first visible row
   size_t coloff;        // first visible col
   char* filename;       // name of file

@@ -4,6 +4,8 @@
 #ifndef GAPBUF_H
 #define GAPBUF_H
 
+#define TAB_STOP 8
+
 struct gapbuf_header {
   char* front;        // string before the gap
   char* back;         // string after the gap, inverted
@@ -32,6 +34,7 @@ char gapbuf_delete_right(gapbuf* gb);       // delete a character after the curs
 
 size_t gapbuf_row(gapbuf* gb);                 // row of cursor position
 size_t gapbuf_col(gapbuf* gb);                 // column of cursor position
+size_t gapbuf_rendercol(gapbuf* gb);
 size_t gapbuf_numrows(gapbuf* gb);             // number of rows in gap buffer
 
 void gapbuf_free(gapbuf* gb);              // free allocated gapbuffer, and return the string contained
