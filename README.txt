@@ -2,9 +2,18 @@ Text Editor in C
 ===============================================================================
 RYe's editor
 
-Using RYe's editor
+Using RYe's editor:
    % make rye
    % ./rye <optional file name>
+
+Key bindings:
+   ^Q — quit
+   ^S — save
+   ^A — go to start of line
+   ^E — go to end of line
+   ^F — search (not implemented yet)
+   ^O — open file (not implemented yet)
+   arrow keys — move cursor
 
 Checking for memory leaks:
    % make rye
@@ -12,7 +21,7 @@ Checking for memory leaks:
 ===============================================================================
 Kilo editor
 
-Using kilo editor
+Using kilo editor:
   % make kilo
   % ./kilo <optional file name>
 ===============================================================================
