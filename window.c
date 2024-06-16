@@ -23,8 +23,6 @@
 
 #define MESSAGE_TIME (10)
 
-/* TO-DO: renderText function, render tabs */
-/* TO-DO: relevant tabs and cursor interaction */
 /* TO-DO: prompt */
 
 enum key {
@@ -203,9 +201,6 @@ void renderFileBar(window* W) {
 }
 
 void renderText(window* W) {
-  /* TO-DO: rendering tabs */
-  /* TO-DO: tabs and cursors */
-
   // move cursor to second row
   char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%zu;1H", (size_t)2);
