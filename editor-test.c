@@ -6,6 +6,8 @@
 #include "gapbuf.h"
 #include "editor.h"
 
+/* TO-DO: more testing on rendercol functions */
+
 int main(void) {
   printf("Testing editor library...\n");
 
