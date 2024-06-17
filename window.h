@@ -61,6 +61,8 @@ void processKey(window* W, bool* go);             // process key press
 
 char* promptUser(window* W, char* prompt);        // prompt user for input
 
+void find(window* W);                             // find word and move cursor
+
 void openFile(window* W, char* filename);         // open text file
 void saveFile(window* W);                         // save edited file
 

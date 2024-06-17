@@ -21,8 +21,6 @@
 #include "editor.h"
 #include "window.h"
 
-/* TO-DO: prompt */
-
 enum key {
   ENTER_KEY = 13,
   BACKSPACE = 127,
@@ -490,7 +488,8 @@ void movePage(window* W, int key) {
       while (E->row > E->rowoff) {
         editor_up(E);
       }
-      for (size_t i = 0; i < W->screenrows; i++) {
+      // move up a page but 2 lines to keep continuity
+      for (size_t i = 0; i < W->screenrows - 2; i++) {
         editor_up(E);
       }
       break;
@@ -501,7 +500,8 @@ void movePage(window* W, int key) {
       while (E->row < E->rowoff + W->screenrows - 1 && E->row < E->numrows) {
         editor_down(E);
       }
-      for (size_t i = 0; i < W->screenrows; i++) {
+      // move down a page but 2 lines to keep continuity
+      for (size_t i = 0; i < W->screenrows - 2; i++) {
         editor_down(E);
       }
       break;
@@ -552,6 +552,12 @@ void processKey(window* W, bool* go) {
     case CTRL_KEY('d'): // simulate page down
     {
       movePage(W, c);
+      break;
+    }
+
+    case CTRL_KEY('f'): {
+      find(W);
+      break;
     }
 
     case BACKSPACE:
@@ -627,6 +633,25 @@ char* promptUser(window* W, char* prompt) {
     }
   }
   return NULL;
+}
+
+void find(window* W) {
+  editor* E = W->editor;
+  char* query = promptUser(W, "Search: %s (Esc to cancel)");
+  if (query == NULL) return;
+  char* s = gapbuf_str(E->buffer);
+  char* match = strstr(s, query);
+  if (match != NULL) {
+    size_t target_frontlen = match - s;
+    while (E->buffer->frontlen > target_frontlen) {
+      editor_backward(E);
+    }
+    while(E->buffer->frontlen < target_frontlen) {
+      editor_forward(E);
+    }
+  }
+  free(query);
+  free(s);
 }
 
 void openFile(window* W, char* filename) {
