@@ -584,6 +584,7 @@ char* promptUser(window* W, char* prompt) {
   size_t buflen = 0;
   char* buf = xmalloc(bufsize * sizeof(char));
   buf[0] = '\0';
+  
   bool inPrompt = true;
   while (inPrompt) {
     setMessage(W, prompt, buf);
