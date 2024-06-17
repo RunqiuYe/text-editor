@@ -21,8 +21,6 @@
 #include "editor.h"
 #include "window.h"
 
-#define MESSAGE_TIME (10)
-
 /* TO-DO: prompt */
 
 enum key {
@@ -471,10 +469,12 @@ void moveCursor(window* W, int key) {
       editor_down(E);
       break;
     }
+    case HOME_KEY:
     case CTRL_KEY('a'): {
       editor_startline(E);
       break;
     }
+    case END_KEY:
     case CTRL_KEY('e'): {
       editor_endline(E);
       break;
@@ -510,11 +510,19 @@ void movePage(window* W, int key) {
 }
 
 void processKey(window* W, bool* go) {
+  static int quit_times = QUIT_TIMES;
+
   editor* E = W->editor;
   int c = readKey(W);
 
   switch (c) {
     case CTRL_KEY('q'): {
+      if (E->dirty != 0 && quit_times > 0) {
+        setMessage(W, "WARNING!!! File has unsaved changes. "
+          "Press ^Q %d more times to quit.", quit_times);
+        quit_times -= 1;
+        return;
+      }
       *go = false;
       write(STDOUT_FILENO, "\x1b[2J", 4);
       write(STDOUT_FILENO, "\x1b[H", 3);
@@ -530,6 +538,8 @@ void processKey(window* W, bool* go) {
     case ARROW_DOWN:
     case ARROW_LEFT:
     case ARROW_RIGHT: 
+    case HOME_KEY:
+    case END_KEY:
     case CTRL_KEY('a'):
     case CTRL_KEY('e'): {
       moveCursor(W, c);
@@ -554,6 +564,11 @@ void processKey(window* W, bool* go) {
 
     case ENTER_KEY: {
       editor_insert(E, '\n');
+      break;
+    }
+
+    case CTRL_KEY('l'):
+    case '\x1b': {
       break;
     }
     

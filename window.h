@@ -21,6 +21,8 @@
 #define WINDOW_H
 
 #define CTRL_KEY(k) ((k) & 0x1f)
+#define MESSAGE_TIME (10)
+#define QUIT_TIMES (3)
 
 struct window_header {
   editor* editor;
