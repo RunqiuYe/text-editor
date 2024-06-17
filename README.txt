@@ -11,6 +11,8 @@ Key bindings:
    ^S — save
    ^A — go to start of line
    ^E — go to end of line
+   ^W — page up
+   ^D — page down
    ^F — search (not implemented yet)
    ^O — open file (not implemented yet)
    arrow keys — move cursor

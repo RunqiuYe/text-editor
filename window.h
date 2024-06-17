@@ -54,6 +54,7 @@ void render(window* W);
 
 int readKey(window* W);                           // read key presses
 void moveCursor(window* W, int key);              // move cursor
+void movePage(window* W, int key);                // next/previous page
 void processKey(window* W, bool* go);             // process key press
 
 void openFile(window* W, char* filename);         // open text file

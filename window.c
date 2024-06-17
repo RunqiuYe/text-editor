@@ -482,6 +482,33 @@ void moveCursor(window* W, int key) {
   }
 }
 
+void movePage(window* W, int key) {
+  editor* E = W->editor;
+  switch (key) {
+  case PAGE_UP:
+    case CTRL_KEY('w'): {
+      while (E->row > E->rowoff) {
+        editor_up(E);
+      }
+      for (size_t i = 0; i < W->screenrows; i++) {
+        editor_up(E);
+      }
+      break;
+    }
+
+    case PAGE_DOWN:
+    case CTRL_KEY('d'): {
+      while (E->row < E->rowoff + W->screenrows - 1 && E->row < E->numrows) {
+        editor_down(E);
+      }
+      for (size_t i = 0; i < W->screenrows; i++) {
+        editor_down(E);
+      }
+      break;
+    }
+  }
+}
+
 void processKey(window* W, bool* go) {
   editor* E = W->editor;
   int c = readKey(W);
@@ -493,10 +520,12 @@ void processKey(window* W, bool* go) {
       write(STDOUT_FILENO, "\x1b[H", 3);
       break;
     }
+
     case CTRL_KEY('s'): {
       saveFile(W);
       break;
     }
+
     case ARROW_UP:
     case ARROW_DOWN:
     case ARROW_LEFT:
@@ -506,6 +535,15 @@ void processKey(window* W, bool* go) {
       moveCursor(W, c);
       break;
     }
+
+    case PAGE_UP:
+    case PAGE_DOWN: 
+    case CTRL_KEY('w'): // simulate page up
+    case CTRL_KEY('d'): // simulate page down
+    {
+      movePage(W, c);
+    }
+
     case BACKSPACE:
     case CTRL_KEY('h'):
     case DEL_KEY: {
@@ -513,10 +551,12 @@ void processKey(window* W, bool* go) {
       editor_delete(E);
       break;
     }
+
     case ENTER_KEY: {
       editor_insert(E, '\n');
       break;
     }
+    
     default: {
       editor_insert(E, c);
       break;
