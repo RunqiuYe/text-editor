@@ -579,6 +579,55 @@ void processKey(window* W, bool* go) {
   }
 }
 
+char* promptUser(window* W, char* prompt) {
+  size_t bufsize = 128;
+  size_t buflen = 0;
+  char* buf = xmalloc(bufsize * sizeof(char));
+  buf[0] = '\0';
+  bool inPrompt = true;
+  while (inPrompt) {
+    setMessage(W, prompt, buf);
+    refresh(W);
+    int c = readKey(W);
+
+    // backspace to delete
+    if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE) {
+      if (buflen != 0) {
+          buflen -= 1;
+          buf[buflen] = '\0';
+        }
+    }
+    // enter to confirm
+    else if (c == ENTER_KEY) {
+      if (buflen != 0) {
+          setMessage(W, "");
+          return buf;
+        }
+        else {
+          setMessage(W, "");
+          return NULL;
+        }
+    }
+    // esc to cancel
+    else if (c == '\x1b') {
+      setMessage(W, "");
+      free(buf);
+      return NULL;
+    }
+    // other keys to insert
+    else if (!iscntrl(c) && c < 128) {
+      if (buflen == bufsize - 1) {
+        bufsize *= 2;
+        buf = realloc(buf, bufsize);
+      }
+      buf[buflen] = c;
+      buflen += 1;
+      buf[buflen] = '\0';
+    }
+  }
+  return NULL;
+}
+
 void openFile(window* W, char* filename) {
   editor* E = W->editor;
 
@@ -608,7 +657,11 @@ void openFile(window* W, char* filename) {
 void saveFile(window* W) {
   editor* E = W->editor;
   if (E->filename == NULL) {
-    return;
+    E->filename = promptUser(W, "Save as: %s");
+    if (E->filename == NULL) {
+      setMessage(W, "Save canceled");
+      return;
+    }
   }
   size_t len = E->buffer->backlen + E->buffer->frontlen;
   char* s = gapbuf_str(E->buffer);

@@ -59,6 +59,8 @@ void moveCursor(window* W, int key);              // move cursor
 void movePage(window* W, int key);                // next/previous page
 void processKey(window* W, bool* go);             // process key press
 
+char* promptUser(window* W, char* prompt);
+
 void openFile(window* W, char* filename);         // open text file
 void saveFile(window* W);                         // save edited file
 
