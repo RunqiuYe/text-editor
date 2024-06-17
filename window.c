@@ -229,7 +229,11 @@ void renderText(window* W) {
     // if current char is newline
     if (c == '\n') {
       if (currow >= E->rowoff && currow < E->rowoff + W->screenrows) {
-        write(STDOUT_FILENO, "\x1b[K", 3);
+        // don't clean line if cursor at end of terminal
+        // otherwise last character is cleaned
+        if (curcol < E->coloff + W->screencols - 1) {
+          write(STDOUT_FILENO, "\x1b[K", 3);
+        }
         write(STDOUT_FILENO, "\n", 1);
       }
       currow += 1;
@@ -277,7 +281,11 @@ void renderText(window* W) {
     // if current char is newline
     if (c == '\n') {
       if (currow >= E->rowoff && currow < E->rowoff + W->screenrows) {
-        write(STDOUT_FILENO, "\x1b[K", 3);
+        // don't clean line if cursor at end of terminal
+        // otherwise last character is cleaned
+        if (curcol < E->coloff + W->screencols) {
+          write(STDOUT_FILENO, "\x1b[K", 3);
+        }
         write(STDOUT_FILENO, "\n", 1);
       }
       currow += 1;
@@ -316,7 +324,11 @@ void renderText(window* W) {
   }
 
   // clear line after render all text
-  write(STDOUT_FILENO, "\x1b[K", 3);
+  // don't clean line if cursor at end of terminal
+  // otherwise last character is cleaned
+  if (curcol < E->coloff + W->screencols - 1) {
+    write(STDOUT_FILENO, "\x1b[K", 3);
+  }
 
   // if more rows empty after rendering, 
   // draw tilde on each empty row
@@ -585,7 +597,7 @@ void processKey(window* W, bool* go) {
   }
 }
 
-char* promptUser(window* W, char* prompt) {
+char* promptUser(window* W, char* prompt, callback_fn* callback) {
   size_t bufsize = 128;
   size_t buflen = 0;
   char* buf = xmalloc(bufsize * sizeof(char));
@@ -600,27 +612,37 @@ char* promptUser(window* W, char* prompt) {
     // backspace to delete
     if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE) {
       if (buflen != 0) {
-          buflen -= 1;
-          buf[buflen] = '\0';
-        }
+        buflen -= 1;
+        buf[buflen] = '\0';
+      }
     }
+
     // enter to confirm
     else if (c == ENTER_KEY) {
-      if (buflen != 0) {
-          setMessage(W, "");
-          return buf;
-        }
-        else {
-          setMessage(W, "");
-          return NULL;
-        }
+      inPrompt = false;
+
+      if (buflen == 0) {
+        setMessage(W, "");
+        free(buf);
+        return NULL;
+      }
+
+      else {
+        setMessage(W, "");
+        if (callback != NULL) (*callback)(W, buf, c);
+        return buf;
+      }
     }
+
     // esc to cancel
     else if (c == '\x1b') {
       setMessage(W, "");
+      if (callback != NULL) (*callback)(W, buf, c);
+      inPrompt = false;
       free(buf);
       return NULL;
     }
+
     // other keys to insert
     else if (!iscntrl(c) && c < 128) {
       if (buflen == bufsize - 1) {
@@ -631,27 +653,38 @@ char* promptUser(window* W, char* prompt) {
       buflen += 1;
       buf[buflen] = '\0';
     }
+
+    if (callback != NULL) (*callback)(W, buf, c);
   }
-  return NULL;
+  return buf;
 }
 
-void find(window* W) {
-  editor* E = W->editor;
-  char* query = promptUser(W, "Search: %s (Esc to cancel)");
+void findCallback(window* W, char* query, int key) {
+  if (key == ENTER_KEY || key == '\x1b') return;
   if (query == NULL) return;
+  editor* E = W->editor;
   char* s = gapbuf_str(E->buffer);
   char* match = strstr(s, query);
   if (match != NULL) {
     size_t target_frontlen = match - s;
-    while (E->buffer->frontlen > target_frontlen) {
-      editor_backward(E);
-    }
-    while(E->buffer->frontlen < target_frontlen) {
-      editor_forward(E);
-    }
+    while (E->buffer->frontlen > target_frontlen) editor_backward(E);
+    while(E->buffer->frontlen < target_frontlen) editor_forward(E);
   }
-  free(query);
   free(s);
+}
+
+void find(window* W) {
+  editor* E = W->editor;
+  size_t saved_frontlen = E->buffer->frontlen;
+
+  char* query = promptUser(W, "Search: %s (Esc to cancel)", findCallback);
+  if (query != NULL) {
+    free(query);
+  }
+  else {
+    while (E->buffer->frontlen > saved_frontlen) editor_backward(E);
+    while (E->buffer->frontlen < saved_frontlen) editor_forward(E);
+  }
 }
 
 void openFile(window* W, char* filename) {
@@ -683,7 +716,7 @@ void openFile(window* W, char* filename) {
 void saveFile(window* W) {
   editor* E = W->editor;
   if (E->filename == NULL) {
-    E->filename = promptUser(W, "Save as: %s");
+    E->filename = promptUser(W, "Save as: %s", NULL);
     if (E->filename == NULL) {
       setMessage(W, "Save canceled");
       return;

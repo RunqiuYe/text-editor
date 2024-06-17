@@ -34,6 +34,8 @@ struct window_header {
 };
 typedef struct window_header window;
 
+typedef void callback_fn (window* W, char* query, int key);
+
 void die(window* W, const char* s);               // debugging and display error
 
 window* window_new(void);                         // create new window
@@ -59,7 +61,8 @@ void moveCursor(window* W, int key);              // move cursor with arrow keys
 void movePage(window* W, int key);                // move to next/previous page
 void processKey(window* W, bool* go);             // process key press
 
-char* promptUser(window* W, char* prompt);        // prompt user for input
+char* promptUser(window* W, char* prompt, callback_fn* callback);
+                                                  // prompt user for input
 
 void find(window* W);                             // find word and move cursor
 
