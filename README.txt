@@ -8,13 +8,16 @@ Using RYe's editor:
 
 Key bindings:
    ^Q — quit
+   ^O — open file
+   ^J — go to previous open file
+   ^K — go to next open file
    ^S — save
+   ^X — close file
    ^A — go to start of line
    ^E — go to end of line
    ^W — page up
    ^D — page down
-   ^F — search (not implemented yet)
-   ^O — open file (not implemented yet)
+   ^F — search
    arrow keys — move cursor
 
 Checking for memory leaks:

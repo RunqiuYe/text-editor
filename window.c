@@ -189,7 +189,7 @@ void renderFileBar(window* W) {
   for (size_t i = 0; i < W->editorLen; i++) {
     editor* E = W->editorList[i];
     len = snprintf(filenames, sizeof(filenames), "[ %.20s ]",
-                  E->filename != NULL ? E->filename: " [No Name] ");
+                  E->filename != NULL ? E->filename: "[Untitled]");
     if (len > W->screencols - totalLen) len = W->screencols - totalLen;
     if (i == W->activeIndex) {
       write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
@@ -369,7 +369,7 @@ void renderStatusBar(window* W) {
   size_t len, rlen;
   len = snprintf(status, sizeof(status), 
                 "%.20s - %zu lines %s",
-                E->filename != NULL ? E->filename: "[No Name]",
+                E->filename != NULL ? E->filename: "[Untitled]",
                 E->numrows,
                 E->dirty != 0 ? "(modified)" : "");
   if (len > W->screencols) len = W->screencols;
@@ -545,7 +545,7 @@ void processKey(window* W, bool* go) {
 
   switch (c) {
     case CTRL_KEY('o'): {
-      char* filename = promptUser(W, "Open file: %s", NULL);
+      char* filename = promptUser(W, "Open file: %s (Enter to confirm)", NULL);
       openFile(W, filename);
       break;
     }
@@ -770,26 +770,29 @@ void openFile(window* W, char* filename) {
 
   E = W->editor;
 
-  // get all text in file into buffer
-  FILE* fp = fopen(filename, "r");
-  if (fp == NULL) {
-    die(W, "fopen");
-  }
-  
-  E->filename = filename;
+  if (filename != NULL) {
+    // get all text in file into buffer
+    FILE* fp = fopen(filename, "r");
+    if (fp == NULL) {
+      die(W, "fopen");
+    }
+    
+    E->filename = filename;
 
-  char c;
-  size_t count = 0;
-  while((c = fgetc(fp)) != EOF) {
-    count += 1;
-    editor_insert(E, c);
-  }
-  fclose(fp);
+    char c;
+    size_t count = 0;
+    while((c = fgetc(fp)) != EOF) {
+      count += 1;
+      editor_insert(E, c);
+    }
+    fclose(fp);
 
-  // move cursor to start of file
-  for (size_t i = 0; i < count; i++) {
-    editor_backward(E);
+    // move cursor to start of file
+    for (size_t i = 0; i < count; i++) {
+      editor_backward(E);
+    }
   }
+
   E->dirty = 0;
 }
 
