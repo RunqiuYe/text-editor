@@ -660,16 +660,34 @@ char* promptUser(window* W, char* prompt, callback_fn* callback) {
 }
 
 void findCallback(window* W, char* query, int key) {
-  if (key == ENTER_KEY || key == '\x1b') return;
+  static size_t lastMatch = 0; // store frontlen of lastMatch
+
+  if (key == ENTER_KEY || key == '\x1b') {
+    lastMatch = 0;
+    return;
+  }
+  else if (key != ARROW_RIGHT && key != ARROW_DOWN) {
+    lastMatch = 0;
+  }
+
   if (query == NULL) return;
+
   editor* E = W->editor;
   char* s = gapbuf_str(E->buffer);
-  char* match = strstr(s, query);
+  char* match;
+  match = strstr(s + lastMatch + strlen(query), query);
+  if (match != NULL) {
+    lastMatch = match - s;
+  }
+  else {
+    match = strstr(s, query);
+  }
   if (match != NULL) {
     size_t target_frontlen = match - s;
     while (E->buffer->frontlen > target_frontlen) editor_backward(E);
-    while(E->buffer->frontlen < target_frontlen) editor_forward(E);
+    while (E->buffer->frontlen < target_frontlen) editor_forward(E);
   }
+
   free(s);
 }
 
@@ -677,7 +695,7 @@ void find(window* W) {
   editor* E = W->editor;
   size_t saved_frontlen = E->buffer->frontlen;
 
-  char* query = promptUser(W, "Search: %s (Esc to cancel)", findCallback);
+  char* query = promptUser(W, "Search: %s (Use Esc/Enter/Right)", findCallback);
   if (query != NULL) {
     free(query);
   }
