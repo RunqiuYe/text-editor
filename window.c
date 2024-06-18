@@ -21,6 +21,8 @@
 #include "editor.h"
 #include "window.h"
 
+/* TO-DO: modify save file and quit to support multiple files */
+
 enum key {
   ENTER_KEY = 13,
   BACKSPACE = 127,
@@ -774,7 +776,9 @@ void openFile(window* W, char* filename) {
     // get all text in file into buffer
     FILE* fp = fopen(filename, "r");
     if (fp == NULL) {
-      die(W, "fopen");
+      fp = fopen(filename, "w");
+      fclose(fp);
+      fp = fopen(filename, "r");
     }
     
     E->filename = filename;
