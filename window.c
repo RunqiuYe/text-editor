@@ -45,7 +45,14 @@ void die(window* W, const char* s) {
 
 window* window_new(void) {
   window* W = xmalloc(sizeof(window));
-  W->editor = editor_new();
+  W->editorList = xmalloc(2 * sizeof(editor*));
+  W->editorList[0] = editor_new();
+  W->editorList[1] = NULL;
+  W->editorLim = 2;
+  W->editorLen = 1;
+  W->activeIndex = 0;
+  W->editor = W->editorList[W->activeIndex];
+
   W->screenrows = 0;
   W->screencols = 0;
   if (tcgetattr(STDIN_FILENO, &W->orig_terminal) == -1) {
@@ -170,8 +177,6 @@ void refresh(window* W) {
 }
 
 void renderFileBar(window* W) {
-  editor* E = W->editor;
-
   // move cursor to first row
   char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%zu;1H", (size_t)1);
@@ -180,19 +185,29 @@ void renderFileBar(window* W) {
   // first row to display file names
   char filenames[80];
   size_t len;
-  len = snprintf(filenames, sizeof(filenames), "[ %.20s ]",
-                E->filename != NULL ? E->filename: " [No Name] ");
-  if (len > W->screencols) len = W->screencols;
-  write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
-  write(STDOUT_FILENO, filenames, len);
-  write(STDOUT_FILENO, "\x1b[m", 3); // reset color
+  size_t totalLen = 0;
+  for (size_t i = 0; i < W->editorLen; i++) {
+    editor* E = W->editorList[i];
+    len = snprintf(filenames, sizeof(filenames), "[ %.20s ]",
+                  E->filename != NULL ? E->filename: " [No Name] ");
+    if (len > W->screencols - totalLen) len = W->screencols - totalLen;
+    if (i == W->activeIndex) {
+      write(STDOUT_FILENO, "\x1b[7m", 4); // reverse color
+    }
+    else {
+      write(STDOUT_FILENO, "\x1b[;100m", 7); // grey background
+    }
+    write(STDOUT_FILENO, filenames, len);
+    write(STDOUT_FILENO, "\x1b[m", 3); // reset color
+    totalLen += len;
+  }
   write(STDOUT_FILENO, "\x1b[;100m", 7);
-  while (len < W->screencols + 1) {
+  while (totalLen < W->screencols + 1) {
     write(STDOUT_FILENO, " ", 1);
-    len += 1;
+    totalLen += 1;
   }
   write(STDOUT_FILENO, "\x1b[m", 3); // reset color
-  write(STDOUT_FILENO, "\x1b[K", 3);
+  // write(STDOUT_FILENO, "\x1b[K", 3);
   write(STDOUT_FILENO, "\n", 1);
 }
 
@@ -336,6 +351,7 @@ void renderText(window* W) {
     write(STDOUT_FILENO, "\x1b[K", 3);
     write(STDOUT_FILENO, "\n", 1);
     write(STDOUT_FILENO, "~", 1);
+    write(STDOUT_FILENO, "\x1b[K", 3);
     currow += 1;
   }
 }
@@ -528,6 +544,33 @@ void processKey(window* W, bool* go) {
   int c = readKey(W);
 
   switch (c) {
+    case CTRL_KEY('o'): {
+      char* filename = promptUser(W, "Open file: %s", NULL);
+      openFile(W, filename);
+      break;
+    }
+    case CTRL_KEY('j'): {
+      if (W->activeIndex == W->editorLen - 1) {
+        W->activeIndex = 0;
+      }
+      else {
+        W->activeIndex += 1;
+      }
+      W->editor = W->editorList[W->activeIndex];
+      break;
+    }
+
+    case CTRL_KEY('k'): {
+      if (W->activeIndex == 0) {
+        W->activeIndex = W->editorLen - 1;
+      }
+      else {
+        W->activeIndex -= 1;
+      }
+      W->editor = W->editorList[W->activeIndex];
+      break;
+    }
+
     case CTRL_KEY('q'): {
       if (E->dirty != 0 && quit_times > 0) {
         setMessage(W, "WARNING!!! File has unsaved changes. "
@@ -708,6 +751,25 @@ void find(window* W) {
 void openFile(window* W, char* filename) {
   editor* E = W->editor;
 
+  // if current editor is not empty, open a new editor
+  if (strcmp(gapbuf_str(E->buffer), "") != 0) {
+    if (W->editorLen + 1 >= W->editorLim) {
+      W->editorLim = 2 * W->editorLim;
+      editor** newList = xcalloc(W->editorLim, sizeof(editor*));
+      for (size_t i = 0; i < W->editorLen; i++) {
+        newList[i] = W->editorList[i];
+      }
+      free(W->editorList);
+      W->editorList = newList;
+    }
+    W->editorList[W->editorLen] = editor_new();
+    W->editor = W->editorList[W->editorLen];
+    W->activeIndex = W->editorLen;
+    W->editorLen += 1;
+  }
+
+  E = W->editor;
+
   // get all text in file into buffer
   FILE* fp = fopen(filename, "r");
   if (fp == NULL) {
@@ -760,6 +822,9 @@ void saveFile(window* W) {
 }
 
 void window_free(window* W) {
-  editor_free(W->editor);
+  for (size_t i = 0; i < W->editorLen; i++) {
+    editor_free(W->editorList[i]);
+  }
+  free(W->editorList);
   free(W);
 }

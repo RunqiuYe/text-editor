@@ -25,7 +25,11 @@
 #define QUIT_TIMES (3)
 
 struct window_header {
-  editor* editor;
+  editor** editorList;              // Array of open editors (open files)
+  size_t editorLim;                 // \length(editorList) = editorLim
+  size_t editorLen;                 // editorLen = number of open editors
+  size_t activeIndex;               // editorList[activeIndex] = editor
+  editor* editor;                   // currently active editor
   struct termios orig_terminal;
   size_t screenrows;                // total number of rows on screen
   size_t screencols;                // total number of cols on screen
