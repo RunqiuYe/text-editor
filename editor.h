@@ -8,6 +8,8 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#define QUIT_TIMES (3)
+
 struct editor_header {
   gapbuf* buffer;
   size_t row;           // current row
@@ -18,6 +20,7 @@ struct editor_header {
   size_t coloff;        // first visible col
   char* filename;       // name of file
   int dirty;            // dirty flag to show modified
+  int quit_times;       // times need to quit
 };
 typedef struct editor_header editor;
 

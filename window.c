@@ -540,7 +540,6 @@ void movePage(window* W, int key) {
 }
 
 void processKey(window* W, bool* go) {
-  int quit_times = QUIT_TIMES;
   editor* E = W->editor;
   int c = readKey(W);
 
@@ -578,15 +577,10 @@ void processKey(window* W, bool* go) {
     }
 
     case CTRL_KEY('q'): {
-      if (E->dirty != 0 && quit_times > 0) {
-        setMessage(W, "WARNING!!! File has unsaved changes. "
-          "Press ^Q %d more times to quit.", quit_times);
-        quit_times -= 1;
-        return;
+      while (W->editorLen > 0) {
+        closeFile(W, go);
+        if (W->editor->dirty != 0) break;
       }
-      *go = false;
-      write(STDOUT_FILENO, "\x1b[2J", 4);
-      write(STDOUT_FILENO, "\x1b[H", 3);
       break;
     }
 
@@ -811,11 +805,10 @@ void openFile(window* W, char* filename) {
 
 void closeFile(window* W, bool* go) {
   editor* E = W->editor;
-  static int quit_times = QUIT_TIMES;
-  if (E->dirty != 0 && quit_times > 0) {
+  if (E->dirty != 0 && E->quit_times > 0) {
     setMessage(W, "WARNING!!! File has unsaved changes. "
-      "Press ^X %d more times to quit.", quit_times);
-    quit_times -= 1;
+      "Press ^X %d more times to quit.", E->quit_times);
+    E->quit_times -= 1;
     return;
   }
   setMessage(W, "");

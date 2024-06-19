@@ -41,6 +41,7 @@ editor* editor_new(void) {
 
   E->filename = NULL;
   E->dirty = 0;
+  E->quit_times = QUIT_TIMES;
 
   ENSURES(is_editor(E));
   return E;
@@ -70,6 +71,7 @@ void editor_forward(editor* E) {
     E->col += 1;
     E->rendercol += 1;
   }
+  E->quit_times = QUIT_TIMES;
   ENSURES(is_editor(E));
 }
 
@@ -94,6 +96,7 @@ void editor_backward(editor* E) {
     E->col -= 1;
     E->rendercol -= 1;
   }
+  E->quit_times = QUIT_TIMES;
   ENSURES(is_editor(E));
 }
 
@@ -116,6 +119,7 @@ void editor_up(editor* E) {
     editor_backward(E);
   }
 
+  E->quit_times = QUIT_TIMES;
   ENSURES(is_editor(E));
 }
 
@@ -144,6 +148,7 @@ void editor_down(editor* E) {
     editor_forward(E);
   }
 
+  E->quit_times = QUIT_TIMES;
   ENSURES(is_editor(E));
 }
 
@@ -153,6 +158,7 @@ void editor_endline(editor* E) {
           && E->buffer->back[E->buffer->backlen - 1] != '\n') {
     editor_forward(E);
   }
+  E->quit_times = QUIT_TIMES;
   ENSURES(is_editor(E));
 }
 
@@ -162,6 +168,7 @@ void editor_startline(editor* E) {
           && E->buffer->front[E->buffer->frontlen - 1] != '\n') {
     editor_backward(E);
   }
+  E->quit_times = QUIT_TIMES;
   ENSURES(is_editor(E));
 }
 
@@ -184,6 +191,7 @@ void editor_insert(editor* E, char c) {
     E->rendercol += 1;
   }
   E->dirty += 1;
+  E->quit_times = QUIT_TIMES;
   ENSURES(is_editor(E));
 }
 
@@ -208,6 +216,7 @@ void editor_delete(editor* E) {
     E->rendercol -= 1;
   }
   E->dirty += 1;
+  E->quit_times = QUIT_TIMES;
   ENSURES(is_editor(E));
 }
 
