@@ -73,6 +73,6 @@ void find(window* W);                             // find word and move cursor
 void openFile(window* W, char* filename);         // open text file
 void saveFile(window* W);                         // save edited file
 
-void window_free(window* W);                      // free
+void window_free(window* W, int argc);            // free
 
 #endif

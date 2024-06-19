@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
   }
 
   disableRawMode(W);
-  window_free(W);
+  window_free(W, argc);
   free(go);
   printf("Thanks for using RYe's editor\n");
   return 0;

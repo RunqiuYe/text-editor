@@ -40,7 +40,7 @@ enum key {
 void die(window* W, const char* s) {
   write(STDOUT_FILENO, "\x1b[2J", 4);
   write(STDOUT_FILENO, "\x1b[H", 3);
-  window_free(W);
+  (void) W;
   perror(s);
   exit(1);
 }
@@ -551,7 +551,7 @@ void processKey(window* W, bool* go) {
       openFile(W, filename);
       break;
     }
-    case CTRL_KEY('k'): {
+    case CTRL_KEY('j'): {
       if (W->activeIndex == W->editorLen - 1) {
         W->activeIndex = 0;
       }
@@ -562,7 +562,7 @@ void processKey(window* W, bool* go) {
       break;
     }
 
-    case CTRL_KEY('j'): {
+    case CTRL_KEY('k'): {
       if (W->activeIndex == 0) {
         W->activeIndex = W->editorLen - 1;
       }
@@ -833,9 +833,16 @@ void saveFile(window* W) {
   setMessage(W, "Can't save! I/O error: %s", strerror(errno));
 }
 
-void window_free(window* W) {
-  for (size_t i = 0; i < W->editorLen; i++) {
+void window_free(window* W, int argc) {
+  size_t i = 0;
+  if (argc >= 2) {
+    gapbuf_free(W->editorList[0]->buffer);
+    free(W->editorList[0]);
+    i = 1;
+  }
+  while (i < W->editorLen) {
     editor_free(W->editorList[i]);
+    i++;
   }
   free(W->editorList);
   free(W);
