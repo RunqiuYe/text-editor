@@ -551,7 +551,7 @@ void processKey(window* W, bool* go) {
       openFile(W, filename);
       break;
     }
-    case CTRL_KEY('j'): {
+    case CTRL_KEY('k'): {
       if (W->activeIndex == W->editorLen - 1) {
         W->activeIndex = 0;
       }
@@ -562,7 +562,7 @@ void processKey(window* W, bool* go) {
       break;
     }
 
-    case CTRL_KEY('k'): {
+    case CTRL_KEY('j'): {
       if (W->activeIndex == 0) {
         W->activeIndex = W->editorLen - 1;
       }
