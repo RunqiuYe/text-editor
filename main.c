@@ -14,7 +14,11 @@ int main(int argc, char* argv[]) {
   window* W = window_new();
   enableRawMode(W);
   if (argc >= 2) {
-    openFile(W, argv[1]);
+    for (int i = 1; i < argc; i++) {
+      char* s = xcalloc(strlen(argv[i])+1, sizeof(char));
+      s = strcpy(s, argv[i]);
+      openFile(W, s);
+    }
   }
 
   setMessage(W, "^Q — quit | ^S — save");
@@ -28,7 +32,7 @@ int main(int argc, char* argv[]) {
   }
 
   disableRawMode(W);
-  window_free(W, argc);
+  window_free(W);
   free(go);
   printf("Thanks for using RYe's editor\n");
   return 0;

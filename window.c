@@ -540,8 +540,7 @@ void movePage(window* W, int key) {
 }
 
 void processKey(window* W, bool* go) {
-  static int quit_times = QUIT_TIMES;
-
+  int quit_times = QUIT_TIMES;
   editor* E = W->editor;
   int c = readKey(W);
 
@@ -551,7 +550,7 @@ void processKey(window* W, bool* go) {
       openFile(W, filename);
       break;
     }
-    case CTRL_KEY('j'): {
+    case CTRL_KEY('k'): {
       if (W->activeIndex == W->editorLen - 1) {
         W->activeIndex = 0;
       }
@@ -562,7 +561,7 @@ void processKey(window* W, bool* go) {
       break;
     }
 
-    case CTRL_KEY('k'): {
+    case CTRL_KEY('j'): {
       if (W->activeIndex == 0) {
         W->activeIndex = W->editorLen - 1;
       }
@@ -570,6 +569,11 @@ void processKey(window* W, bool* go) {
         W->activeIndex -= 1;
       }
       W->editor = W->editorList[W->activeIndex];
+      break;
+    }
+
+    case CTRL_KEY('x'): {
+      closeFile(W, go);
       break;
     }
 
@@ -805,6 +809,34 @@ void openFile(window* W, char* filename) {
   E->dirty = 0;
 }
 
+void closeFile(window* W, bool* go) {
+  editor* E = W->editor;
+  static int quit_times = QUIT_TIMES;
+  if (E->dirty != 0 && quit_times > 0) {
+    setMessage(W, "WARNING!!! File has unsaved changes. "
+      "Press ^X %d more times to quit.", quit_times);
+    quit_times -= 1;
+    return;
+  }
+  setMessage(W, "");
+  editor_free(W->editorList[W->activeIndex]);
+  for (size_t i = W->activeIndex + 1; i < W->editorLen; i++) {
+    W->editorList[i-1] = W->editorList[i];
+  }
+  W->editorList[W->editorLen - 1] = NULL;
+  W->editorLen -= 1;
+  if (W->editorLen == 0) {
+    *go = false;
+    write(STDOUT_FILENO, "\x1b[2J", 4);
+    write(STDOUT_FILENO, "\x1b[H", 3);
+    return;
+  }
+  if (W->activeIndex >= W->editorLen) {
+    W->activeIndex -= 1;
+  }
+  W->editor = W->editorList[W->activeIndex];
+}
+
 void saveFile(window* W) {
   editor* E = W->editor;
   if (E->filename == NULL) {
@@ -833,16 +865,9 @@ void saveFile(window* W) {
   setMessage(W, "Can't save! I/O error: %s", strerror(errno));
 }
 
-void window_free(window* W, int argc) {
-  size_t i = 0;
-  if (argc >= 2) {
-    gapbuf_free(W->editorList[0]->buffer);
-    free(W->editorList[0]);
-    i = 1;
-  }
-  while (i < W->editorLen) {
+void window_free(window* W) {
+  for (size_t i = 0; i < W->editorLen; i++) {
     editor_free(W->editorList[i]);
-    i++;
   }
   free(W->editorList);
   free(W);

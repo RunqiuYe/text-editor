@@ -71,8 +71,9 @@ char* promptUser(window* W, char* prompt, callback_fn* callback);
 void find(window* W);                             // find word and move cursor
 
 void openFile(window* W, char* filename);         // open text file
+void closeFile(window* W, bool* go);              // close currently active file
 void saveFile(window* W);                         // save edited file
 
-void window_free(window* W, int argc);            // free
+void window_free(window* W);                      // free
 
 #endif
