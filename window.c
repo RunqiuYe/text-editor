@@ -754,7 +754,8 @@ void openFile(window* W, char* filename) {
   editor* E = W->editor;
 
   // if current editor is not empty, open a new editor
-  if (strcmp(gapbuf_str(E->buffer), "") != 0) {
+  char* s = gapbuf_str(E->buffer);
+  if (strcmp(s, "") != 0) {
     if (W->editorLen + 1 >= W->editorLim) {
       W->editorLim = 2 * W->editorLim;
       editor** newList = xcalloc(W->editorLim, sizeof(editor*));
@@ -769,6 +770,7 @@ void openFile(window* W, char* filename) {
     W->activeIndex = W->editorLen;
     W->editorLen += 1;
   }
+  free(s);
 
   E = W->editor;
 
@@ -779,6 +781,9 @@ void openFile(window* W, char* filename) {
       fp = fopen(filename, "w");
       fclose(fp);
       fp = fopen(filename, "r");
+    }
+    if (fp == NULL) {
+      die(W, "fopen");
     }
     
     E->filename = filename;
