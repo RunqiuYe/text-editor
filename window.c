@@ -844,7 +844,7 @@ void saveFile(window* W) {
   int fd = open(E->filename, O_RDWR | O_CREAT, 0644);
   if (fd != -1) {
     if (ftruncate(fd, len) != -1) {
-      if (write(fd, s, len)) {
+      if ((size_t)write(fd, s, len) == len) {
         close(fd);
         free(s);
         E->dirty = 0;
