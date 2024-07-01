@@ -1,0 +1,15 @@
+{
+  "files.associations": {
+    "contracts.h": "c",
+    "stdbool.h": "c",
+    "stdio.h": "c",
+    "xalloc.h": "c",
+    "ctype.h": "c",
+    "editor.h": "c",
+    "string.h": "c",
+    "stdlib.h": "c",
+    "unistd.h": "c",
+    "window.h": "c",
+    "fcntl.h": "c"
+  }
+}
