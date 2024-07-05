@@ -1,6 +1,6 @@
 ---
 triple:          'x86_64-apple-darwin'
-binary-path:     rye
+binary-path:     'src/rye'
 relocations:
   - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _is_gapbuf, symObjAddr: 0x0, symBinAddr: 0x100001240, symSize: 0x80 }
   - { offsetInCU: 0x42, offset: 0x42, size: 0x8, addend: 0x0, symName: _is_gapbuf, symObjAddr: 0x0, symBinAddr: 0x100001240, symSize: 0x80 }
@@ -45,7 +45,7 @@ relocations:
   - { offsetInCU: 0x6FA, offset: 0x1111, size: 0x8, addend: 0x0, symName: _editor_free, symObjAddr: 0x680, symBinAddr: 0x1000032C0, symSize: 0x30 }
   - { offsetInCU: 0x26, offset: 0x1176, size: 0x8, addend: 0x0, symName: _die, symObjAddr: 0x0, symBinAddr: 0x1000032F0, symSize: 0x50 }
   - { offsetInCU: 0x41, offset: 0x1191, size: 0x8, addend: 0x0, symName: _findCallback, symObjAddr: 0x1FF0, symBinAddr: 0x1000052E0, symSize: 0x100 }
-  - { offsetInCU: 0x64, offset: 0x11B4, size: 0x8, addend: 0x0, symName: _findCallback.lastMatch, symObjAddr: 0xAE18, symBinAddr: 0x100007000, symSize: 0x0 }
+  - { offsetInCU: 0x64, offset: 0x11B4, size: 0x8, addend: 0x0, symName: _findCallback.lastMatch, symObjAddr: 0xAE20, symBinAddr: 0x100007000, symSize: 0x0 }
   - { offsetInCU: 0x146, offset: 0x1296, size: 0x8, addend: 0x0, symName: _die, symObjAddr: 0x0, symBinAddr: 0x1000032F0, symSize: 0x50 }
   - { offsetInCU: 0x4A6, offset: 0x15F6, size: 0x8, addend: 0x0, symName: _window_new, symObjAddr: 0x50, symBinAddr: 0x100003340, symSize: 0xD0 }
   - { offsetInCU: 0x5E1, offset: 0x1731, size: 0x8, addend: 0x0, symName: _getScreenSize, symObjAddr: 0x320, symBinAddr: 0x100003610, symSize: 0x150 }
