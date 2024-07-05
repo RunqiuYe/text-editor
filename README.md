@@ -4,6 +4,7 @@
 Using RYe's editor:
 
 ```
+% cd src
 % make rye
 % ./rye <file names (optional)>
 ```
@@ -30,6 +31,7 @@ arrow keys — move cursor
 Checking for memory leaks:
 
 ```
+% cd src
 % make rye
 % leaks --atExit -- ./rye
 ```
@@ -39,6 +41,7 @@ Checking for memory leaks:
 Using kilo editor:
 
 ```
+% cd src
 % make kilo
 % ./kilo <file names (optional)>
 ```
@@ -49,6 +52,7 @@ Using kilo editor:
 Compiling escape sequence printing:
 
 ```
+% cd src
 % make escape
 % ./escape
 ```
