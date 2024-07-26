@@ -4,7 +4,6 @@
 Using RYe's editor:
 
 ```
-% cd src
 % make rye
 % ./rye <file names (optional)>
 ```
@@ -31,7 +30,6 @@ arrow keys — move cursor
 Checking for memory leaks:
 
 ```
-% cd src
 % make rye
 % leaks --atExit -- ./rye
 ```
@@ -41,7 +39,6 @@ Checking for memory leaks:
 Using kilo editor:
 
 ```
-% cd src
 % make kilo
 % ./kilo <file names (optional)>
 ```
@@ -52,7 +49,6 @@ Using kilo editor:
 Compiling escape sequence printing:
 
 ```
-% cd src
 % make escape
 % ./escape
 ```
@@ -63,6 +59,7 @@ Compiling escape sequence printing:
 Testing gap buffer interface with contracts:
 
 ```
+% cd src
 % gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c gapbuf-test.c
 % leaks --atExit -- ./a.out
 ```
@@ -70,6 +67,7 @@ Testing gap buffer interface with contracts:
 Testing gap buffer without contracts:
 
 ```
+% cd src
 % gcc -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c gapbuf-test.c
 % leaks --atExit -- ./a.out
 ```
@@ -80,6 +78,7 @@ Testing gap buffer without contracts:
 Testing editor with contracts:
 
 ```
+% cd src
 % gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c editor-test.c
 % leaks --atExit -- ./a.out
 ```
@@ -87,6 +86,7 @@ Testing editor with contracts:
 Testing editor without contracts:
 
 ```
+% cd src
 % gcc -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c editor-test.c
 % leaks --atExit -- ./a.out
 ```
