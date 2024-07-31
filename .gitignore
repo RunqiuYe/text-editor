@@ -1,2 +1,5 @@
 *.DS_Store
+*.idea
+*.DSYM
+*.dSYM.zip
 
