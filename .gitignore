@@ -2,4 +2,7 @@
 *.idea
 *.DSYM
 *.dSYM.zip
-
+rye
+kilo
+escape
+a.out

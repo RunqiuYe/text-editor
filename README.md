@@ -60,8 +60,7 @@ Testing gap buffer interface with contracts:
 
 ```
 % cd src
-% gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c gapbuf-test.c
-% leaks --atExit -- ./a.out
+% gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c gapbuf-test.
 ```
 
 Testing gap buffer without contracts:
@@ -69,7 +68,6 @@ Testing gap buffer without contracts:
 ```
 % cd src
 % gcc -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c gapbuf-test.c
-% leaks --atExit -- ./a.out
 ```
 
 
@@ -80,7 +78,6 @@ Testing editor with contracts:
 ```
 % cd src
 % gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c editor-test.c
-% leaks --atExit -- ./a.out
 ```
 
 Testing editor without contracts:
@@ -88,5 +85,4 @@ Testing editor without contracts:
 ```
 % cd src
 % gcc -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c editor.c editor-test.c
-% leaks --atExit -- ./a.out
 ```
