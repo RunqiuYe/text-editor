@@ -27,8 +27,6 @@ Key bindings:
 arrow keys — move cursor
 ```
 
-Checking for memory leaks:
-
 ```
 % make rye
 % leaks --atExit -- ./rye
