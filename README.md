@@ -27,11 +27,6 @@ Key bindings:
 arrow keys — move cursor
 ```
 
-```
-% make rye
-% leaks --atExit -- ./rye
-```
-
 ## Kilo editor
 
 Using kilo editor:
