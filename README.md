@@ -53,7 +53,7 @@ Testing gap buffer interface with contracts:
 
 ```
 % cd src
-% gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c gapbuf-test.
+% gcc -DDEBUG -fsanitize=undefined -g -Wall -Wextra -Werror -Wshadow -std=c99 -pedantic gapbuf.c gapbuf-test.c
 ```
 
 Testing gap buffer without contracts:
